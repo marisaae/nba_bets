@@ -2,26 +2,14 @@ from dateutil import parser
 from zoneinfo import ZoneInfo
 from nba_fetch import roster_df as roster
 from dotenv import load_dotenv
+from utils import normalize_name, get_json
 import requests
 import json
 import psycopg
 import os
-import unicodedata
 
-def get_json(path):
-    url = base_url + path
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to retrieve data: {response.status_code}")
-        print(url)
-        return None
-def normalize_name(name):
-    name = unicodedata.normalize("NFKD", name)
-    name = "".join(c for c in name if not unicodedata.combining(c))
-    name = name.lower()
-    return name
+
+
 
 
 load_dotenv()
@@ -34,12 +22,9 @@ odds_format = "american"
 date_format = "iso"
 bookmakers = "draftkings"
 dsn = os.getenv("DATABASE_URL")
-base_url = "https://api.the-odds-api.com"
+
 
 get_events_path = f"/v4/sports/{sport}/events?apiKey={api_key}&dateFormat={date_format}"
-
-# print(json.dumps(insert_dataname, indent=4))
-
 
 # fetch event data 
 events = get_json(get_events_path)
