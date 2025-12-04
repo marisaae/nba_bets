@@ -1,10 +1,7 @@
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog
 from tabulate import tabulate
-from dotenv import load_dotenv
 import pandas as pd
-import psycopg
-import os
 import time
 import random
 
@@ -12,9 +9,6 @@ import random
 nba_teams = teams.get_teams()
 # print(json.dumps(nba_teams, indent=4))
 
-load_dotenv()
-lal_team_id = 1610612747
-dsn = os.getenv("DATABASE_URL")
 
 # Fetch team info
 def fetch_team_info(team_id, cur):
@@ -25,7 +19,7 @@ def fetch_team_info(team_id, cur):
         print("No team data found.")
         return
 
-    # Extract values
+    # extract values
     team_name = team_df.loc[0, 'TEAM_NAME']
     team_abbreviation = team_df.loc[0, 'TEAM_ABBREVIATION']
     team_city = team_df.loc[0, 'TEAM_CITY']
@@ -199,12 +193,3 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
                 fouls = EXCLUDED.fouls,
                 last_updated = NOW();
                 """, (player_id, game_id, game_date, matchup, win_loss, minutes, points, fieldgoals_made, fieldgoals_attempted, fieldgoals_percent, threepoints_made, threepoints_attempted, threepoints_percent, freethrows_made, freethrows_attempted, freethrows_percent, off_rebounds, def_rebounds, rebounds, assists, steals, blocks, turnovers, fouls))
-        
-
-with psycopg.connect(dsn) as conn:
-    with conn.cursor() as cur:
-        fetch_team_info(lal_team_id, cur)
-        roster_df = fetch_team_roster(lal_team_id, cur)
-        fetch_team_schedule(lal_team_id, "2025-26", cur)
-        for _, row in roster_df.iterrows():
-            fetch_player_game_logs(row['PLAYER_ID'], '2025-26', cur)
