@@ -10,7 +10,7 @@ api_key = os.getenv("ODDSAPI_KEY")
 sport = "basketball_nba"
 region = "us"
 game_markets = "h2h,totals"
-player_markets = "player_points,player_rebounds,player_assists,player_points_rebounds_assists,player_threes,player_blocks,player_steals,player_turnovers,player_field_goals"
+player_markets = "player_points,player_rebounds,player_assists,player_points_rebounds_assists,player_threes,player_blocks,player_steals"
 odds_format = "american"
 date_format = "iso"
 bookmakers = "draftkings"
@@ -129,7 +129,7 @@ def fetch_odds(roster_df):
 
                     for row in game_odds_rows_to_insert:
                         cur.execute("""
-                            INSERT INTO game_odds (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
+                            INSERT INTO game_odd_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
                             VALUES (%s,%s,%s,%s,%s,%s,%s)
                             ON CONFLICT (event_id, bookmaker, market, outcome_name) DO UPDATE SET
                                 price = EXCLUDED.price,
@@ -142,7 +142,7 @@ def fetch_odds(roster_df):
 
                     for row in player_odds_rows_to_insert:
                         cur.execute("""
-                            INSERT INTO player_odds (event_id, bookmaker, market, outcome_name, player_name, price, point, last_odds_update)
+                            INSERT INTO player_odds_raw (event_id, bookmaker, market, outcome_name, player_name, price, point, last_odds_update)
                             VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                             ON CONFLICT (event_id, bookmaker, market, outcome_name, player_name) DO UPDATE SET
                                 price = EXCLUDED.price,
