@@ -117,14 +117,15 @@ def fetch_team_schedule(team_id, season, cur):
             arena_name = row['arenaName']
             arena_city = row['arenaCity']
             arena_state = row['arenaState']
+            is_home = (row['homeTeam_teamId'] == team_id)
 
             cur.execute("""
-                INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 ON CONFLICT (game_id) DO UPDATE SET
                     game_status = EXCLUDED.game_status,
                     last_updated = NOW();
-            """, (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state))
+            """, (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home))
     else:
         print("No schedule data found.")
 
@@ -211,10 +212,11 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
         blocks = log_row['BLK']
         turnovers = log_row['TOV']
         fouls = log_row['PF']
+        pts_reb_ast = log_row['PTS'] + log_row['REB'] + log_row['AST']
 
         cur.execute("""
-            INSERT INTO player_game_log (player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO player_game_log (player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             ON CONFLICT (game_id, player_id) DO UPDATE SET
                 wl = EXCLUDED.wl,
                 min = EXCLUDED.min,
@@ -236,5 +238,6 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
                 blk = EXCLUDED.blk,
                 turnover = EXCLUDED.turnover,
                 fouls = EXCLUDED.fouls,
+                pts_reb_ast = EXCLUDED.pts_reb_ast,
                 last_updated = NOW();
-                """, (player_id, game_id, game_date, matchup, win_loss, minutes, points, fieldgoals_made, fieldgoals_attempted, fieldgoals_percent, threepoints_made, threepoints_attempted, threepoints_percent, freethrows_made, freethrows_attempted, freethrows_percent, off_rebounds, def_rebounds, rebounds, assists, steals, blocks, turnovers, fouls))
+                """, (player_id, game_id, game_date, matchup, win_loss, minutes, points, fieldgoals_made, fieldgoals_attempted, fieldgoals_percent, threepoints_made, threepoints_attempted, threepoints_percent, freethrows_made, freethrows_attempted, freethrows_percent, off_rebounds, def_rebounds, rebounds, assists, steals, blocks, turnovers, fouls, pts_reb_ast))

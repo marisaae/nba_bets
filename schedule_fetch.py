@@ -28,6 +28,7 @@ def run_all():
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             print("Refreshing materialized views...")
+            cur.execute("REFRESH MATERIALIZED VIEW rolling_stats;")
             cur.execute("REFRESH MATERIALIZED VIEW game_odds_pivot;")
             cur.execute("REFRESH MATERIALIZED VIEW player_odds_pivot;")
             cur.execute("REFRESH MATERIALIZED VIEW player_prop_results;")
