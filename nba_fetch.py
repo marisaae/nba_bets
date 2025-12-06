@@ -1,5 +1,5 @@
 from nba_api.stats.static import teams
-from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog
+from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog, teamgamelog
 from tabulate import tabulate
 import pandas as pd
 import time
@@ -124,24 +124,64 @@ def fetch_team_schedule(team_id, season, cur):
     else:
         print("No schedule data found.")
 
+    return schedule_df
+
+def fetch_team_game_logs(team_id, game_id, season, cur, max_retries=3, wait_seconds=5):
+    game_log_df = pd.DataFrame()
+    for attempt in range(max_retries):
+        try:
+            time.sleep(random.uniform(0.7, 1.4))
+            team_game_log = teamgamelog.TeamGameLog(team_id=team_id, season=season)
+            game_log_df = team_game_log.get_data_frames()[0]
+            break   
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed for team ID {team_id}: {e}")
+            time.sleep(wait_seconds)
+
+    if game_log_df.empty:
+        print(f"No game log data found for team ID {team_id}.")
+
+    filtered_game_log = game_log_df[game_log_df["Game_ID"] == game_id]
+
+    if filtered_game_log.empty:
+        print(f"Team {team_id} did not play game {game_id} (yet).")
+        return
+
+    for _, log_row in filtered_game_log.iterrows():
+        game_id = log_row['Game_ID']
+        game_date = log_row['GAME_DATE']
+        matchup = log_row['MATCHUP']
+        win_loss = log_row['WL']
+        points = log_row['PTS']
+
+        cur.execute("""
+            INSERT INTO team_game_log (team_id, game_id, game_date, matchup, wl, pts)
+            VALUES (%s,%s,%s,%s,%s,%s)
+            ON CONFLICT (team_id, game_id) DO UPDATE SET
+                wl = EXCLUDED.wl,
+                pts = EXCLUDED.pts,
+                last_updated = NOW();
+        """, (team_id, game_id, game_date, matchup, win_loss, points))
+
+
 # fetch player game logs and update database
 def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5):
-    log_df = pd.DataFrame()
+    player_log_df = pd.DataFrame()
     for attempt in range(max_retries):
         try:
             time.sleep(random.uniform(0.7, 1.4))
             player_log = playergamelog.PlayerGameLog(player_id=player_id, season=season)
-            log_df = player_log.get_data_frames()[0].drop(columns=['PLUS_MINUS', 'VIDEO_AVAILABLE'])
-            log_df['GAME_DATE'] = pd.to_datetime(log_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
+            player_log_df = player_log.get_data_frames()[0].drop(columns=['PLUS_MINUS', 'VIDEO_AVAILABLE'])
+            player_log_df['GAME_DATE'] = pd.to_datetime(player_log_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
             break   
         except Exception as e:
             print(f"Attempt {attempt+1} failed for player ID {player_id}: {e}")
             time.sleep(wait_seconds)
 
-    if log_df.empty:
+    if player_log_df.empty:
         print(f"No game log data found for player ID {player_id}.")
 
-    for _, log_row in log_df.iterrows():
+    for _, log_row in player_log_df.iterrows():
         game_id = log_row['Game_ID']
         game_date = log_row['GAME_DATE']
         matchup = log_row['MATCHUP']
