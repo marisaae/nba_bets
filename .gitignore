@@ -1,5 +1,2 @@
 .env
-log.txt
-__pycache__/
-run_fetch.bat
 test_fetch.py
