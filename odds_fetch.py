@@ -129,7 +129,7 @@ def fetch_odds(roster_df):
 
                     for row in game_odds_rows_to_insert:
                         cur.execute("""
-                            INSERT INTO game_odd_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
+                            INSERT INTO game_odds_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
                             VALUES (%s,%s,%s,%s,%s,%s,%s)
                             ON CONFLICT (event_id, bookmaker, market, outcome_name) DO UPDATE SET
                                 price = EXCLUDED.price,
