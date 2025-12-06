@@ -2,12 +2,12 @@ from dotenv import load_dotenv
 import psycopg
 import os
 
-from nba_fetch import (fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_team_game_logs, fetch_player_game_logs)
+from nba_fetch import (fetch_team_id, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_team_game_logs, fetch_player_game_logs)
 from odds_fetch import fetch_odds
 
 load_dotenv()
 dsn = os.getenv("DATABASE_URL")
-lal_team_id = 1610612747
+lal_team_id = fetch_team_id("Los Angeles Lakers")
 
 def run_all():
     with psycopg.connect(dsn) as conn:

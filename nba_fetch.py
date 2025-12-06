@@ -4,10 +4,14 @@ from tabulate import tabulate
 import pandas as pd
 import time
 import random
+import json
 
-# get_teams returns a list of 30 dictionaries, each an NBA team.
-nba_teams = teams.get_teams()
-# print(json.dumps(nba_teams, indent=4))
+# Fetch team ID by team name
+def fetch_team_id(team_name):
+    nba_teams = teams.get_teams()
+    for team in nba_teams:
+        if team['full_name'] == team_name:
+            return team['id']
 
 
 # Fetch team info
@@ -126,6 +130,7 @@ def fetch_team_schedule(team_id, season, cur):
 
     return schedule_df
 
+# Fetch team game logs
 def fetch_team_game_logs(team_id, game_id, season, cur, max_retries=3, wait_seconds=5):
     game_log_df = pd.DataFrame()
     for attempt in range(max_retries):
@@ -164,7 +169,7 @@ def fetch_team_game_logs(team_id, game_id, season, cur, max_retries=3, wait_seco
         """, (team_id, game_id, game_date, matchup, win_loss, points))
 
 
-# fetch player game logs and update database
+# Fetch player game logs
 def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5):
     player_log_df = pd.DataFrame()
     for attempt in range(max_retries):
