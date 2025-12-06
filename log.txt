@@ -62,3 +62,66 @@ Updated 48 player odds rows for event fe4d07bc0ca481a686bda4801b135ead.
 Updated 48 player odds rows for event fe4d07bc0ca481a686bda4801b135ead.
 Updated 48 player odds rows for event fe4d07bc0ca481a686bda4801b135ead.
 DraftKings odds not available for event 2031f79c4dd229576855fb346449a8d4
+Event 61feabe0b59a9dba9be076c59ecd125d inserted into schedule.
+Unexpected error processing event 61feabe0b59a9dba9be076c59ecd125d: relation "game_odd_raw" does not exist
+LINE 2:                             INSERT INTO game_odd_raw (event_...
+                                                ^
+DraftKings odds not available for event 2031f79c4dd229576855fb346449a8d4
+Refreshing materialized views...
+Materialized views updated.
+Event 61feabe0b59a9dba9be076c59ecd125d inserted into schedule.
+Updated 4 odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 4 odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 4 odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 4 odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+Updated 42 player odds rows for event 61feabe0b59a9dba9be076c59ecd125d.
+DraftKings odds not available for event 2031f79c4dd229576855fb346449a8d4
+Refreshing materialized views...
+Materialized views updated.
+DraftKings odds not available for event 2031f79c4dd229576855fb346449a8d4
+Refreshing materialized views...
+Materialized views updated.
+DraftKings odds not available for event 2031f79c4dd229576855fb346449a8d4
+Refreshing materialized views...
+Materialized views updated.
