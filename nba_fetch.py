@@ -87,7 +87,9 @@ def fetch_team_schedule(team_id, season, cur):
     league_schedule = scheduleleaguev2.ScheduleLeagueV2(season=season)
     schedule_df = league_schedule.get_data_frames()[0]
     schedule_df = schedule_df[(schedule_df['homeTeam_teamId'] == team_id) | (schedule_df['awayTeam_teamId'] == team_id)]
+    schedule_df['schedule_teamId'] = team_id
     columns = [
+        'schedule_teamId',
         'gameId',
         'gameLabel',
         'seasonYear',
@@ -101,7 +103,9 @@ def fetch_team_schedule(team_id, season, cur):
         'arenaCity',
         'arenaState'
     ]
-    schedule_df = schedule_df[columns].reset_index(drop=True)
+    schedule_df["gameDate"] = pd.to_datetime(schedule_df["gameDate"])
+    schedule_df = schedule_df[columns].sort_values(["schedule_teamId", "gameDate"]).reset_index(drop=True)
+    schedule_df["is_b2b"] = (schedule_df.groupby("schedule_teamId")["gameDate"].diff().dt.days == 1)
 
     if not schedule_df.empty:
         for _, row in schedule_df.iterrows():
@@ -118,14 +122,16 @@ def fetch_team_schedule(team_id, season, cur):
             arena_city = row['arenaCity']
             arena_state = row['arenaState']
             is_home = (row['homeTeam_teamId'] == team_id)
+            is_b2b = row['is_b2b']
 
             cur.execute("""
-                INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home, is_b2b)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 ON CONFLICT (game_id) DO UPDATE SET
                     game_status = EXCLUDED.game_status,
+                    is_b2b = EXCLUDED.is_b2b,
                     last_updated = NOW();
-            """, (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home))
+            """, (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home, is_b2b))
     else:
         print("No schedule data found.")
 
