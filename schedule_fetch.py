@@ -23,19 +23,19 @@ def run_all():
                 fetch_team_game_logs(row['awayTeam_teamId'], game_id, '2025-26', cur)
 
     
-    fetch_odds(roster_df)
+    # fetch_odds(roster_df)
 
-    with psycopg.connect(dsn) as conn:
-        with conn.cursor() as cur:
-            print("Refreshing materialized views...")
-            cur.execute("REFRESH MATERIALIZED VIEW rolling_stats;")
-            cur.execute("REFRESH MATERIALIZED VIEW game_odds_pivot;")
-            cur.execute("REFRESH MATERIALIZED VIEW player_odds_pivot;")
-            cur.execute("REFRESH MATERIALIZED VIEW player_prop_results;")
-            cur.execute("REFRESH MATERIALIZED VIEW game_props_results;")
-            cur.execute("REFRESH MATERIALIZED VIEW model_player_stats;")
+    # with psycopg.connect(dsn) as conn:
+    #     with conn.cursor() as cur:
+    #         print("Refreshing materialized views...")
+    #         cur.execute("REFRESH MATERIALIZED VIEW rolling_stats;")
+    #         cur.execute("REFRESH MATERIALIZED VIEW game_odds_pivot;")
+    #         cur.execute("REFRESH MATERIALIZED VIEW player_odds_pivot;")
+    #         cur.execute("REFRESH MATERIALIZED VIEW player_prop_results;")
+    #         cur.execute("REFRESH MATERIALIZED VIEW game_props_results;")
+    #         cur.execute("REFRESH MATERIALIZED VIEW model_player_stats;")
 
-            print("Materialized views updated.")
+    #         print("Materialized views updated.")
 
 if __name__ == "__main__":
     run_all()
