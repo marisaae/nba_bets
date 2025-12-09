@@ -127,41 +127,32 @@ def fetch_odds(roster_df):
                         print(f"No matching schedule row for event {event_id} ({home_team} vs {away_team} on {game_date})")
                     else:
                         print(f"Event {event_id} inserted into schedule.")
-                    
-                    # execute_values(cur, """
-                    #         INSERT INTO game_odds_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
-                    #         VALUES (%s,%s,%s,%s,%s,%s,%s)
-                    #         ON CONFLICT (event_id, bookmaker, market, outcome_name) DO UPDATE SET
-                    #             price = EXCLUDED.price,
-                    #             point = EXCLUDED.point,
-                    #             last_odds_update = EXCLUDED.last_odds_update,
-                    #             last_updated = NOW();
-                    #     """, game_odds_rows_to_insert)
-                    
-                    for row in game_odds_rows_to_insert:
-                        cur.execute("""
-                            INSERT INTO game_odds_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
-                            VALUES (%s,%s,%s,%s,%s,%s,%s)
-                            ON CONFLICT (event_id, bookmaker, market, outcome_name) DO UPDATE SET
-                                price = EXCLUDED.price,
-                                point = EXCLUDED.point,
-                                last_odds_update = EXCLUDED.last_odds_update,
-                                last_updated = NOW();
-                        """, row)
 
-                        print (f"Updated {len(game_odds_rows_to_insert)} odds rows for event {event_id}.")
+                    game_odds_query = """
+                        INSERT INTO game_odds_raw (event_id, bookmaker, market, outcome_name, price, point, last_odds_update)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s)
+                        ON CONFLICT (event_id, bookmaker, market, outcome_name) DO UPDATE SET
+                            price = EXCLUDED.price,
+                            point = EXCLUDED.point,
+                            last_odds_update = EXCLUDED.last_odds_update,
+                            last_updated = NOW();
+                        """
+                    cur.executemany(game_odds_query, game_odds_rows_to_insert)
 
-                    for row in player_odds_rows_to_insert:
-                        cur.execute("""
-                            INSERT INTO player_odds_raw (event_id, bookmaker, market, outcome_name, player_name, price, point, last_odds_update)
-                            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                            ON CONFLICT (event_id, bookmaker, market, outcome_name, player_name) DO UPDATE SET
-                                price = EXCLUDED.price,
-                                point = EXCLUDED.point,
-                                last_odds_update = EXCLUDED.last_odds_update,
-                                last_updated = NOW();
-                        """, row)
-                        print (f"Updated {len(player_odds_rows_to_insert)} player odds rows for event {event_id}.")
+                    print (f"Updated {len(game_odds_rows_to_insert)} odds rows for event {event_id}.")
+
+                    player_odds_query = """
+                        INSERT INTO player_odds_raw (event_id, bookmaker, market, outcome_name, player_name, price, point, last_odds_update)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                        ON CONFLICT (event_id, bookmaker, market, outcome_name, player_name) DO UPDATE SET
+                            price = EXCLUDED.price,
+                            point = EXCLUDED.point,
+                            last_odds_update = EXCLUDED.last_odds_update,
+                            last_updated = NOW();
+                        """
+                    cur.executemany(player_odds_query, player_odds_rows_to_insert)
+                    
+                    print (f"Updated {len(player_odds_rows_to_insert)} player odds rows for event {event_id}.")
                         
         except Exception as e:
             print(f"Unexpected error processing event {event.get('id', 'UNKNOWN')}: {e}")

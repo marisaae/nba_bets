@@ -4,7 +4,6 @@ from tabulate import tabulate
 import pandas as pd
 import time
 import random
-import json
 
 # Fetch team ID by team name
 def fetch_team_id(team_name):
@@ -34,7 +33,7 @@ def fetch_team_info(team_id, cur):
     team_conf_rank = team_df.loc[0, 'CONF_RANK']
 
     # insert or update team info in the database
-    cur.execute("""
+    query = """
         INSERT INTO team_info
         (id, team_name, abbreviation, location, conference, record, total_win, total_loss, standing)
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
@@ -44,7 +43,8 @@ def fetch_team_info(team_id, cur):
             total_loss = EXCLUDED.total_loss,
             standing = EXCLUDED.standing,
             last_updated = NOW();
-    """, (team_id, team_name, team_abbreviation, team_city, team_conference, team_record, team_wins, team_losses, team_conf_rank))
+    """
+    cur.execute(query, (team_id, team_name, team_abbreviation, team_city, team_conference, team_record, team_wins, team_losses, team_conf_rank))
 
  # Fetch team roster
 def fetch_team_roster(team_id, cur):
@@ -54,20 +54,18 @@ def fetch_team_roster(team_id, cur):
     rows_to_insert = []
     if not roster_df.empty:
         for _, row in roster_df.iterrows():
+            player_id = row['PLAYER_ID']
+            full_name = row['PLAYER']
+            first_name = row['PLAYER'].split(' ')[0]
+            last_name = row['PLAYER'].split(' ')[1]
+            age = row['AGE']
+            number = row['NUM']
+            position = row['POSITION']
             raw_height = row['HEIGHT']
             feet, inches = raw_height.split("-")
-            rows_to_insert.append((
-            row['TeamID'],
-            row['PLAYER_ID'],
-            row['PLAYER'],
-            row['PLAYER'].split(' ')[0],
-            row['PLAYER'].split(' ')[1],
-            row['AGE'],
-            row['NUM'],
-            row['POSITION'],
-            f"{feet}'{inches}\"",
-            row['WEIGHT'] + " lbs"
-            ))
+            height = f"{feet}'{inches}\""
+            weight = row['WEIGHT'] + " lbs"
+            rows_to_insert.append((team_id, player_id, full_name, first_name, last_name, age, number, position, height, weight))
     else:
         print("No team roster data found.")
 
@@ -114,22 +112,22 @@ def fetch_team_schedule(team_id, season, cur):
     rows_to_insert = []
     if not schedule_df.empty:
         for _, row in schedule_df.iterrows():
-            rows_to_insert.append((
-            row['gameId'],
-            row['gameLabel'],
-            row['seasonYear'],
-            row['gameDate'],
-            row['gameStatusText'],
-            row['homeTeam_teamId'],
-            row['homeTeam_teamName'],
-            row['awayTeam_teamId'],
-            row['awayTeam_teamName'],
-            row['arenaName'],
-            row['arenaCity'],
-            row['arenaState'],
-            (row['homeTeam_teamId'] == team_id),
-            row['is_b2b']
-            ))
+            game_id = row['gameId']
+            game_label = row['gameLabel']
+            season_year = row['seasonYear']
+            game_date = row['gameDate']
+            game_status = row['gameStatusText']
+            home_team_id = row['homeTeam_teamId']
+            home_team_name = row['homeTeam_teamName']
+            away_team_id = row['awayTeam_teamId']
+            away_team_name = row['awayTeam_teamName']
+            arena = row['arenaName']
+            arena_city = row['arenaCity']
+            arena_state = row['arenaState']
+            is_home = (row['homeTeam_teamId'] == team_id)
+            is_b2b = row['is_b2b']
+
+            rows_to_insert.append((game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena, arena_city, arena_state, is_home, is_b2b))
     else:
         print("No schedule data found.")
     query = """
@@ -168,13 +166,12 @@ def fetch_team_game_logs(team_id, game_id, season, cur, max_retries=3, wait_seco
 
     rows_to_insert = []
     for _, log_row in filtered_game_log.iterrows():
-        rows_to_insert.append((
-            team_id,
-            log_row['Game_ID'],
-            log_row['GAME_DATE'],
-            log_row['MATCHUP'],
-            log_row['PTS']
-            ))
+        game_id = log_row['Game_ID']
+        game_date = log_row['GAME_DATE']
+        matchup = log_row['MATCHUP']
+        pts = log_row['PTS']
+
+        rows_to_insert.append((team_id, game_id, game_date, matchup, pts))
 
     query = """
         INSERT INTO team_game_log (team_id, game_id, game_date, matchup, pts)
@@ -204,33 +201,33 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
 
     rows_to_insert = []
     for _, log_row in player_log_df.iterrows():
-        rows_to_insert.append((
-            log_row['Player_ID'],
-            log_row['Game_ID'],
-            log_row['GAME_DATE'],
-            log_row['MATCHUP'],
-            log_row['WL'],
-            log_row['MIN'],
-            log_row['PTS'],
-            log_row['FGM'],
-            log_row['FGA'],
-            log_row['FG_PCT'],
-            log_row['FG3M'],
-            log_row['FG3A'],
-            log_row['FG3_PCT'],
-            log_row['FTM'],
-            log_row['FTA'],
-            log_row['FT_PCT'],
-            log_row['OREB'],
-            log_row['DREB'],
-            log_row['REB'],
-            log_row['AST'],
-            log_row['STL'],
-            log_row['BLK'],
-            log_row['TOV'],
-            log_row['PF'],
-            log_row['PTS'] + log_row['REB'] + log_row['AST']
-        ))
+            game_id = log_row['Game_ID']
+            game_date = log_row['GAME_DATE']
+            matchup = log_row['MATCHUP']
+            wl = log_row['WL']
+            min = log_row['MIN']
+            pts = log_row['PTS']
+            fgm = log_row['FGM']
+            fga = log_row['FGA']
+            fg_pct = log_row['FG_PCT']
+            fg3m = log_row['FG3M']
+            fg3a = log_row['FG3A']
+            fg3_pct = log_row['FG3_PCT']
+            ftm = log_row['FTM']
+            fta = log_row['FTA']
+            ft_pct = log_row['FT_PCT']
+            oreb = log_row['OREB']
+            dreb = log_row['DREB']
+            tot_reb = log_row['REB']
+            ast = log_row['AST']
+            stl = log_row['STL']
+            blk = log_row['BLK']
+            tov = log_row['TOV']
+            pf = log_row['PF']
+            pra = log_row['PTS'] + log_row['REB'] + log_row['AST']
+            
+            rows_to_insert.append((player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, tov, pf, pra))
+    
     query = """
         INSERT INTO player_game_log (player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
