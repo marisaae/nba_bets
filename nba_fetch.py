@@ -1,5 +1,5 @@
 from nba_api.stats.static import teams
-from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog, teamgamelog
+from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog
 from tabulate import tabulate
 import pandas as pd
 import time
@@ -99,11 +99,13 @@ def fetch_team_schedule(team_id, season, cur):
         'gameStatusText',
         'homeTeam_teamId',
         'homeTeam_teamName',
+        'homeTeam_score',
         'awayTeam_teamId',
         'awayTeam_teamName',
+        'awayTeam_score',
         'arenaName',
         'arenaCity',
-        'arenaState'
+        'arenaState',
     ]
     schedule_df["gameDate"] = pd.to_datetime(schedule_df["gameDate"])
     schedule_df = schedule_df[columns].sort_values(["schedule_teamId", "gameDate"]).reset_index(drop=True)
@@ -119,68 +121,33 @@ def fetch_team_schedule(team_id, season, cur):
             game_status = row['gameStatusText']
             home_team_id = row['homeTeam_teamId']
             home_team_name = row['homeTeam_teamName']
+            home_team_score = row['homeTeam_score']
             away_team_id = row['awayTeam_teamId']
             away_team_name = row['awayTeam_teamName']
+            away_team_score = row['awayTeam_score']
             arena = row['arenaName']
             arena_city = row['arenaCity']
             arena_state = row['arenaState']
             is_home = (row['homeTeam_teamId'] == team_id)
             is_b2b = row['is_b2b']
 
-            rows_to_insert.append((game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena, arena_city, arena_state, is_home, is_b2b))
+            rows_to_insert.append((game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, home_team_score, away_team_id, away_team_name, away_team_score, arena, arena_city, arena_state, is_home, is_b2b))
     else:
         print("No schedule data found.")
     query = """
-        INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, away_team_id, away_team_name, arena_name, arena_city, arena_state, is_home, is_b2b)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        INSERT INTO schedule (game_id, game_label, season_year, game_date, game_status, home_team_id, home_team_name, home_team_score, away_team_id, away_team_name, away_team_score, arena_name, arena_city, arena_state, is_home, is_b2b)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (game_id) DO UPDATE SET
             game_status = EXCLUDED.game_status,
             is_b2b = EXCLUDED.is_b2b,
+            home_team_score = EXCLUDED.home_team_score,
+            away_team_score = EXCLUDED.away_team_score,
             last_updated = NOW();
         """
     cur.executemany(query, rows_to_insert)
 
     return schedule_df
 
-# Fetch team game logs
-def fetch_team_game_logs(team_id, game_id, season, cur, max_retries=3, wait_seconds=5):
-    game_log_df = pd.DataFrame()
-    for attempt in range(max_retries):
-        try:
-            time.sleep(random.uniform(0.7, 1.4))
-            team_game_log = teamgamelog.TeamGameLog(team_id=team_id, season=season)
-            game_log_df = team_game_log.get_data_frames()[0]
-            break   
-        except Exception as e:
-            print(f"Attempt {attempt+1} failed for team ID {team_id}: {e}")
-            time.sleep(wait_seconds)
-
-    if game_log_df.empty:
-        print(f"No game log data found for team ID {team_id}.")
-
-    filtered_game_log = game_log_df[game_log_df["Game_ID"] == game_id]
-
-    if filtered_game_log.empty:
-        print(f"Team {team_id} did not play game {game_id} (yet).")
-        return
-
-    rows_to_insert = []
-    for _, log_row in filtered_game_log.iterrows():
-        game_id = log_row['Game_ID']
-        game_date = log_row['GAME_DATE']
-        matchup = log_row['MATCHUP']
-        pts = log_row['PTS']
-
-        rows_to_insert.append((team_id, game_id, game_date, matchup, pts))
-
-    query = """
-        INSERT INTO team_game_log (team_id, game_id, game_date, matchup, pts)
-        VALUES (%s,%s,%s,%s,%s)
-        ON CONFLICT (team_id, game_id) DO UPDATE SET
-            pts = EXCLUDED.pts,
-            last_updated = NOW();
-        """
-    cur.executemany(query, rows_to_insert)
 
 # Fetch player game logs
 def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5):

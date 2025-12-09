@@ -3,9 +3,10 @@ import psycopg
 import os
 from datetime import date
 
-from nba_fetch import (fetch_team_id, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_team_game_logs, fetch_player_game_logs)
+from nba_fetch import (fetch_team_id, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs)
 from odds_fetch import fetch_odds
 
+today = date.today()
 load_dotenv()
 dsn = os.getenv("DATABASE_URL")
 lal_team_id = fetch_team_id("Los Angeles Lakers")
@@ -18,11 +19,6 @@ def run_all():
             schedule_df = fetch_team_schedule(lal_team_id, "2025-26", cur)
             for _, row in roster_df.iterrows():
                 fetch_player_game_logs(row['PLAYER_ID'], '2025-26', cur)
-            for _, row in schedule_df.iterrows():
-                game_id = row['gameId']
-                fetch_team_game_logs(row['homeTeam_teamId'], game_id, '2025-26', cur)
-                fetch_team_game_logs(row['awayTeam_teamId'], game_id, '2025-26', cur)
-
     
     fetch_odds(roster_df)
 
@@ -38,6 +34,6 @@ def run_all():
 
             print("Materialized views updated.")
 
-        print("date: " + date.today())
+        print("date: ", today)
 if __name__ == "__main__":
     run_all()
