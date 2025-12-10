@@ -3,7 +3,7 @@ import psycopg
 import os
 from datetime import date
 
-from nba_fetch import (fetch_team_id, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs)
+from nba_fetch import (fetch_team_id, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs, fetch_team_def_stats)
 from odds_fetch import fetch_odds
 
 today = date.today()
@@ -16,7 +16,10 @@ def run_all():
         with conn.cursor() as cur:
             fetch_team_info(lal_team_id, cur)
             roster_df = fetch_team_roster(lal_team_id, cur)
-            schedule_df = fetch_team_schedule(lal_team_id, "2025-26", cur)
+            fetch_team_schedule(lal_team_id, "2025-26", cur)
+            fetch_team_def_stats('F', '2025-26', cur)
+            fetch_team_def_stats('C', '2025-26', cur)
+            fetch_team_def_stats('G', '2025-26', cur)
             for _, row in roster_df.iterrows():
                 fetch_player_game_logs(row['PLAYER_ID'], '2025-26', cur)
     
