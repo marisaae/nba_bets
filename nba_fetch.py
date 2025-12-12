@@ -237,14 +237,8 @@ def fetch_team_def_stats(opp_player_position, season, cur):
         team_id = row['TEAM_ID']
         team_name = row['TEAM_NAME']
         gp = row['GP']
-        wins = row['W']
-        loss = row['L']
         win_pct = row['W_PCT']
-        opp_fgm = row['OPP_FGM']
-        opp_fga = row['OPP_FGA']
         opp_fg_pct= row['OPP_FG_PCT']
-        opp_fg3m = row['OPP_FG3M']
-        opp_fg3a = row['OPP_FG3A']
         opp_fg3_pct = row['OPP_FG3_PCT']
         opp_oreb = row['OPP_OREB']
         opp_dreb = row['OPP_DREB']
@@ -271,21 +265,15 @@ def fetch_team_def_stats(opp_player_position, season, cur):
         opp_pf_rank = row['OPP_PF_RANK']
         opp_pts_rank = row['OPP_PTS_RANK']
 
-        rows_to_insert.append((team_id, team_name, gp, wins, loss, win_pct, opp_player_position, opp_fgm, opp_fga, opp_fg_pct, opp_fg3m, opp_fg3a, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank))
+        rows_to_insert.append((team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank))
 
     query = """
-        INSERT INTO team_def_stats(team_id, team_name, gp, wins, loss, win_pct, opp_player_position, opp_fgm, opp_fga, opp_fg_pct, opp_fg3m, opp_fg3a, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank)
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        INSERT INTO team_def_stats(team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT(team_id, opp_player_position) DO UPDATE SET
         gp = EXCLUDED.gp, 
-        wins = EXCLUDED.wins, 
-        loss = EXCLUDED.loss, 
         win_pct = EXCLUDED.win_pct, 
-        opp_fgm = EXCLUDED.opp_fgm, 
-        opp_fga = EXCLUDED.opp_fga, 
         opp_fg_pct = EXCLUDED.opp_fg_pct, 
-        opp_fg3m = EXCLUDED.opp_fg3m, 
-        opp_fg3a = EXCLUDED.opp_fg3a, 
         opp_fg3_pct = EXCLUDED.opp_fg3_pct, 
         opp_oreb = EXCLUDED.opp_oreb, 
         opp_dreb = EXCLUDED.opp_dreb, 
