@@ -5,6 +5,11 @@ import pandas as pd
 import time
 import random
 
+def fetch_all_teams():
+    nba_teams = teams.get_teams()
+    teams_df = pd.DataFrame(nba_teams)
+    return teams_df
+
 # Fetch team ID by team name
 def fetch_team_id(team_name):
     nba_teams = teams.get_teams()
@@ -24,6 +29,7 @@ def fetch_team_info(team_id, cur):
 
     # extract values
     team_name = team_df.loc[0, 'TEAM_NAME']
+    team_curr_season = team_df.loc[0, 'SEASON_YEAR']
     team_abbreviation = team_df.loc[0, 'TEAM_ABBREVIATION']
     team_city = team_df.loc[0, 'TEAM_CITY']
     team_conference = team_df.loc[0, 'TEAM_CONFERENCE']
@@ -35,16 +41,17 @@ def fetch_team_info(team_id, cur):
     # insert or update team info in the database
     query = """
         INSERT INTO team_info
-        (id, team_name, abbreviation, location, conference, record, total_win, total_loss, standing)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        (id, curr_season, team_name, abbreviation, location, conference, record, total_win, total_loss, standing)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (id) DO UPDATE SET
+            curr_season = EXCLUDED.curr_season,
             record = EXCLUDED.record,
             total_win = EXCLUDED.total_win,
             total_loss = EXCLUDED.total_loss,
             standing = EXCLUDED.standing,
             last_updated = NOW();
     """
-    cur.execute(query, (team_id, team_name, team_abbreviation, team_city, team_conference, team_record, team_wins, team_losses, team_conf_rank))
+    cur.execute(query, (team_id, team_curr_season, team_name, team_abbreviation, team_city, team_conference, team_record, team_wins, team_losses, team_conf_rank))
 
  # Fetch team roster
 def fetch_team_roster(team_id, cur):
@@ -191,11 +198,11 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
             pf = log_row['PF']
             pra = log_row['PTS'] + log_row['REB'] + log_row['AST']
             
-            rows_to_insert.append((player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, tov, pf, pra))
+            rows_to_insert.append((player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, tov, pf, pra))
     
     query = """
-        INSERT INTO player_game_log (player_id, game_id, game_date, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO player_game_log (player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (game_id, player_id) DO UPDATE SET
             wl = EXCLUDED.wl,
             min = EXCLUDED.min,
@@ -265,12 +272,12 @@ def fetch_team_def_stats(opp_player_position, season, cur):
         opp_pf_rank = row['OPP_PF_RANK']
         opp_pts_rank = row['OPP_PTS_RANK']
 
-        rows_to_insert.append((team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank))
+        rows_to_insert.append((season, team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank))
 
     query = """
-        INSERT INTO team_def_stats(team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank)
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        ON CONFLICT(team_id, opp_player_position) DO UPDATE SET
+        INSERT INTO team_def_stats(season, team_id, team_name, gp, win_pct, opp_player_position, opp_fg_pct, opp_fg3_pct, opp_oreb, opp_dreb, opp_reb, opp_ast, opp_tov, opp_stl, opp_blk, opp_pf, opp_pts, opp_fgm_rank, opp_fga_rank, opp_fg_pct_rank, opp_fg3m_rank, opp_fg3a_rank, opp_fg3_pct_rank, opp_oreb_rank, opp_dreb_rank, opp_reb_rank, opp_ast_rank, opp_tov_rank, opp_stl_rank, opp_blk_rank, opp_pf_rank, opp_pts_rank)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        ON CONFLICT(season, team_id, opp_player_position) DO UPDATE SET
         gp = EXCLUDED.gp, 
         win_pct = EXCLUDED.win_pct, 
         opp_fg_pct = EXCLUDED.opp_fg_pct, 
