@@ -11,12 +11,11 @@ def fetch_all_teams():
     return teams_df
 
 # Fetch team ID by team name
-def fetch_team_id(team_name):
-    nba_teams = teams.get_teams()
-    for team in nba_teams:
-        if team['full_name'] == team_name:
-            return team['id']
-
+# def fetch_team_id(team_name):
+#     nba_teams = teams.get_teams()
+#     for team in nba_teams:
+#         if team['full_name'] == team_name:
+#             return team['id']
 
 # Fetch team info
 def fetch_team_info(team_id, cur):

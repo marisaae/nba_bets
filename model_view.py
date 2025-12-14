@@ -5,7 +5,6 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, r2_score
 import os
 from dotenv import load_dotenv
-from tabulate import tabulate
 
 pd.set_option("display.max_columns", None)
 
@@ -140,41 +139,3 @@ results = merged_model_stats[[
 ]].sort_values(["full_name", "game_date"])
 
 print(results.head(50))
-
-pd.set_option("display.max_rows", None)
-pd.set_option("display.max_columns", None)
-
-# print("\n=== PREDICTIONS FOR ALL PLAYERS ===")
-# print(results.head(50))  # show first 50 rows
-
-# coef_series = pd.Series(model.coef_, index=feature_cols)
-# coef_series.sort_values(key=abs, ascending=False)
-
-# print(coef_series)
-
-
-# from sklearn.ensemble import RandomForestRegressor
-# from sklearn.metrics import mean_absolute_error, r2_score
-
-# model = RandomForestRegressor(
-#     n_estimators=200,  # number of trees
-#     max_depth=10,      # limit tree depth to avoid overfitting
-#     random_state=42
-# )
-
-# model.fit(X_train, y_train)
-# test_preds = model.predict(X_test)
-
-# print("MAE:", mean_absolute_error(y_test, test_preds))
-# print("R² :", r2_score(y_test, test_preds))
-
-# merged_model_stats["predicted_pts"] = model.predict(
-#     merged_model_stats[feature_cols]
-# )
-
-# results = merged_model_stats[[
-#     "full_name", "game_date",
-#     "pts", "predicted_pts"
-# ]].sort_values(["full_name", "game_date"])
-
-# print(results)
