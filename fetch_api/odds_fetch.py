@@ -2,7 +2,7 @@ from dateutil import parser
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from utils import normalize_name, get_json
-import psycopg
+from db.connection import get_connection
 
 import os
 
@@ -15,7 +15,6 @@ player_markets = "player_points,player_rebounds,player_assists,player_points_reb
 odds_format = "american"
 date_format = "iso"
 bookmakers = "draftkings"
-dsn = os.getenv("DATABASE_URL")
 
 def fetch_odds(roster_df):
     get_events_path = f"/v4/sports/{sport}/events?apiKey={api_key}&dateFormat={date_format}"
@@ -115,7 +114,7 @@ def fetch_odds(roster_df):
                 print(f"No player outcomes to insert for event {event_id}")
                 continue   
 
-            with psycopg.connect(dsn) as conn:
+            with get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
                         UPDATE schedule

@@ -1,23 +1,19 @@
-from dotenv import load_dotenv
-import psycopg
-import os
 from datetime import date
 import time
 import random
+from db.connection import get_connection
 
 from fetch_api.nba_fetch import (fetch_all_teams, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs, fetch_team_def_stats)
 from fetch_api.odds_fetch import fetch_odds
 
 today = date.today()
-load_dotenv()
-dsn = os.getenv("DATABASE_URL")
 all_teams = fetch_all_teams()
 
 lal_team_abbrev = "LAL"
 lal_team_id = all_teams.loc[all_teams['abbreviation'] == lal_team_abbrev, 'id'].iloc[0]
 
 def run_all():
-    with psycopg.connect(dsn) as conn:
+    with get_connection() as conn:
         with conn.cursor() as cur:
             for _, row in all_teams.iterrows():
                 team_id = row['id']
@@ -33,7 +29,7 @@ def run_all():
         
     fetch_odds(roster_df)
 
-    with psycopg.connect(dsn) as conn:
+    with get_connection() as conn:
         with conn.cursor() as cur:
             print("Refreshing materialized views...")
             cur.execute("REFRESH MATERIALIZED VIEW rolling_stats;")
