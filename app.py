@@ -2,6 +2,27 @@ import streamlit as st
 from db.queries import get_team_info, get_team_schedule, get_team_roster
 from fetch_api.nba_fetch import fetch_all_teams
 import pandas as pd
+from pathlib import Path
+
+st.markdown("""
+<style>
+[data-testid="stImage"] {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    width: 100%;
+    border: 2px solid purple;
+}
+.player-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # Initialize session state
 if "page" not in st.session_state:
@@ -10,6 +31,7 @@ if "active_tab" not in st.session_state:
     st.session_state.active_tab = "Roster"
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
+
 
 all_teams = fetch_all_teams()
 
@@ -147,8 +169,49 @@ if not roster_df.empty:
                  },
                  hide_index=True)
     
+roster_df_sorted = roster_df.sort_values(by="full_name")
+
+# Folder where images are stored
+images_folder = Path("player_headshots")  # adjust this to your folder path
+
+num_cols = 5
+rows = roster_df.shape[0] // num_cols + 1
+idx = 0
+
+def select_player(player_id):
+    st.session_state.selected_player = player_id
+    st.session_state.page = "player"
+
 t3.subheader("Click a player to view their stats")
-t3.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1642876.png", width=200)
+
+for r in range(rows):
+    cols = st.columns(num_cols)
+    for c in range(num_cols):
+        if idx >= roster_df.shape[0]:
+            break
+        player = roster_df.iloc[idx]
+        image_path = images_folder / f"{player['player_id']}.png"
+
+        with cols[c]:
+            # st.markdown("<div class='player-card'>", unsafe_allow_html=True)
+
+            if image_path.exists():
+                st.image(str(image_path))
+            else: st.image("placeholder_headshot.png")
+            
+            st.markdown(
+                f"<div class='player-name'>{player['full_name']}</div>",
+                unsafe_allow_html=True
+            )
+
+            if st.button(
+                "View Stats",
+                width="stretch",
+                key=f"player_{player['player_id']}"
+            ):
+                select_player(player["player_id"])
+
+            idx += 1
                  
 # # need to show a general team page with the general team info and stats
 # # need to have player profiles with their current season stats

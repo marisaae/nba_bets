@@ -43,7 +43,8 @@ def get_team_schedule(team_id):
 
 def get_team_roster(team_id):
     query = """
-    SELECT full_name,
+    SELECT player_id,
+           full_name,
            age,
            number,
            position,
