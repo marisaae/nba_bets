@@ -40,3 +40,17 @@ def get_team_schedule(team_id):
         ORDER BY game_date ASC;
     """
     return pd.read_sql(query, engine, params=(team_id, team_id))
+
+def get_team_roster(team_id):
+    query = """
+    SELECT full_name,
+           age,
+           number,
+           position,
+           height,
+           weight
+        FROM roster
+        WHERE team_id = %s
+        ORDER BY full_name ASC;
+    """
+    return pd.read_sql(query, engine, params=(team_id,))

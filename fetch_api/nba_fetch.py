@@ -1,9 +1,11 @@
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog, leaguedashteamstats
+from nba_headshot_downloader import headshots
 from tabulate import tabulate
 import pandas as pd
 import time
 import random
+import os
 
 def fetch_all_teams():
     nba_teams = teams.get_teams()
@@ -16,6 +18,21 @@ def fetch_all_teams():
 #     for team in nba_teams:
 #         if team['full_name'] == team_name:
 #             return team['id']
+
+# Fetch player photos by player ID
+def fetch_player_headshot(player_id):
+    folder = "player_headshots"
+    filename = f"{player_id}.png"
+    filepath = os.path.join(folder, filename)
+
+    # Attempt to fetch the headshot
+    headshots.getHeadshotById(player_id, folder)
+
+    # Check if the file was actually saved
+    if os.path.exists(filepath):
+        print(f"Headshot saved for player ID: {player_id}")
+    else:
+        print(f"No photo available for player ID: {player_id}")
 
 # Fetch team info
 def fetch_team_info(team_id, cur):
@@ -58,9 +75,11 @@ def fetch_team_roster(team_id, cur):
     roster_df = roster.get_data_frames()[0]
     # print(tabulate(roster_df, headers='keys', tablefmt='psql'))
     rows_to_insert = []
+    current_player_ids = []
     if not roster_df.empty:
         for _, row in roster_df.iterrows():
             player_id = row['PLAYER_ID']
+            current_player_ids.append(player_id)
             full_name = row['PLAYER']
             first_name = row['PLAYER'].split(' ')[0]
             last_name = row['PLAYER'].split(' ')[1]
@@ -87,6 +106,12 @@ def fetch_team_roster(team_id, cur):
                     last_updated = NOW();
             """
     cur.executemany(query, rows_to_insert)
+    placeholders = ','.join(['%s'] * len(current_player_ids))
+    delete_query = f"""
+        DELETE FROM roster
+        WHERE player_id NOT IN ({placeholders});
+    """
+    cur.execute(delete_query, current_player_ids)
 
     return roster_df
 

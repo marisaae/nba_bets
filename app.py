@@ -1,7 +1,15 @@
 import streamlit as st
-from db.queries import get_team_info, get_team_schedule
+from db.queries import get_team_info, get_team_schedule, get_team_roster
 from fetch_api.nba_fetch import fetch_all_teams
 import pandas as pd
+
+# Initialize session state
+if "page" not in st.session_state:
+    st.session_state.page = "team"  # default page
+if "active_tab" not in st.session_state:
+    st.session_state.active_tab = "Roster"
+if "selected_player" not in st.session_state:
+    st.session_state.selected_player = None
 
 all_teams = fetch_all_teams()
 
@@ -28,9 +36,16 @@ with col2:
     st.write(f"Western Conference Standing: **{standing}**")
     st.write(f"Record: **{record}**")
 
+def show_player_page(player_id):
+    st.button("← Back to Team", on_click=lambda: st.query_params.clear())
+    st.write(f"Player ID: {player_id}")
 
 def load_team_schedule(team_id):
     df = get_team_schedule(team_id)
+    return df
+
+def load_team_roster(team_id):
+    df = get_team_roster(team_id)
     return df
 
 def format_schedule(df, team_id, team_name="Lakers"):
@@ -72,7 +87,6 @@ def format_schedule(df, team_id, team_name="Lakers"):
     df = df.drop(columns=["home_team_id", "away_team_id", "home_team_name", "away_team_name", "home_team_score", "away_team_score"])
     return df
 
-    
 def highlight_lakers_score(row):
     lal_score, opp_score = map(
         int,
@@ -93,10 +107,12 @@ def highlight_lakers_score(row):
     return styles
 
 schedule_df = load_team_schedule(lal_team_id)
+roster_df = load_team_roster(lal_team_id)
 schedule_df = format_schedule(schedule_df, lal_team_id, "Lakers")
 styled_schedule_df = schedule_df.style.apply(highlight_lakers_score, axis=1)
 
-t1, t2, t3, t4 = st.tabs(["Schedule", "Roster", "Stats", "Player Props"])
+
+t1, t2, t3, t4 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props"])
 
 if not schedule_df.empty:
     t1.subheader("Team Schedule")
@@ -107,14 +123,34 @@ if not schedule_df.empty:
                      "season_year": "Season",
                      "game_status": "Status",
                      "arena_name": "Arena"
-
                  },
                  hide_index=True)
 else:
     t1.warning("Schedule data not found.")
 
-
-# need to show a general team page with the general team info and stats
-# need to have player profiles with their current season stats
-    # this needs to have visualizations showing their stats for the whole season on a graph
-# need to have player odds profiles with their current / next game bets if available and show visualizations of the last 5 game stats and have a line of the current projected stats along with the model to say what their prediction is for the next game stats
+if not roster_df.empty:
+    t2.subheader("Team Roster")
+    t2.dataframe(roster_df, 
+                 column_config= {
+                    "full_name": "Name",
+                    "age": {
+                            "label": "Age",
+                            "alignment": "left",
+                        },
+                    "position": "Position",
+                    "number": {
+                            "label": "Jersey Number",
+                            "alignment": "left",
+                        },
+                    "height": "Height",
+                    "weight": "Weight"
+                 },
+                 hide_index=True)
+    
+t3.subheader("Click a player to view their stats")
+t3.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1642876.png", width=200)
+                 
+# # need to show a general team page with the general team info and stats
+# # need to have player profiles with their current season stats
+#     # this needs to have visualizations showing their stats for the whole season on a graph
+# # need to have player odds profiles with their current / next game bets if available and show visualizations of the last 5 game stats and have a line of the current projected stats along with the model to say what their prediction is for the next game stats
