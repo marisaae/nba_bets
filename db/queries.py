@@ -55,3 +55,34 @@ def get_team_roster(team_id):
         ORDER BY full_name ASC;
     """
     return pd.read_sql(query, engine, params=(team_id,))
+
+def get_player_stats(player_id, curr_season):
+    query = """
+    SELECT player_id,
+           season,
+           matchup,
+           wl,
+           min,
+           pts,
+           fgm,
+           fga,
+           fg_pct,
+           three_pts_made,
+           three_pts_att,
+           three_pts_pct,
+           ftm,
+           fta,
+           ft_pct,
+           oreb,
+           dreb,
+           tot_reb,
+           ast,
+           stl,
+           blk,
+           turnover,
+           fouls
+        FROM player_game_log
+        WHERE player_id = %s AND season = %s
+        ORDER BY game_date DESC;
+    """
+    return pd.read_sql(query, engine, params=(player_id, curr_season))
