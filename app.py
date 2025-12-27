@@ -1,8 +1,11 @@
 import streamlit as st
-from db.queries import get_team_info, get_team_schedule, get_team_roster, get_player_stats
-from fetch_api.nba_fetch import fetch_all_teams
+import plotly.express as px
 import pandas as pd
 from pathlib import Path
+from fetch_api.nba_fetch import fetch_all_teams
+from utils.player_stats import render_player_list, render_player_page
+from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
+from utils.data_load import load_team_schedule, load_team_roster, load_team_info
 
 st.markdown("""
 <style>
@@ -28,255 +31,6 @@ st.markdown("""
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
 
-
-# helper functions
-def select_player(player_id):
-    st.session_state.selected_player = player_id
-    st.session_state.page = "player"
-    st.query_params["player_id"] = str(player_id)
-    st.rerun()
-
-
-def go_back():
-    st.session_state.selected_player = None
-    st.query_params.clear()
-
-
-def render_player_list(roster_df):
-    
-    roster_df_sorted = roster_df.sort_values(by="full_name")
-    images_folder = Path("player_headshots") 
-
-    num_cols = 5
-    rows = roster_df_sorted.shape[0] // num_cols + 1
-    idx = 0
-
-    st.subheader("Click a player to view their stats")
-
-    for r in range(rows):
-        cols = st.columns(num_cols)
-        for c in range(num_cols):
-            if idx >= roster_df_sorted.shape[0]:
-                break
-            player = roster_df_sorted.iloc[idx]
-            image_path = images_folder / f"{player['player_id']}.png"
-
-            with cols[c]:
-
-                if image_path.exists():
-                    st.image(str(image_path))
-                else: st.image("placeholder_headshot.png")
-                
-                st.markdown(
-                    f"<div class='player-name'>{player['full_name']}</div>",
-                    unsafe_allow_html=True
-                )
-
-                if st.button(
-                    "View Stats",
-                    width="stretch",
-                    key=f"player_{player['player_id']}"
-                ):
-                    select_player(player["player_id"])
-
-                idx += 1
-
-def calc_ppg(player_stats_df):
-    points = player_stats_df["pts"].sum()
-    games = player_stats_df.shape[0]
-    if games == 0:
-        return 0
-    return round(points / games, 1)
-
-
-def calc_apg(player_stats_df):
-    assists = player_stats_df["ast"].sum()
-    games = player_stats_df.shape[0]
-    if games == 0:
-        return 0
-    return round(assists / games, 1)
-
-
-def calc_fgpct(player_stats_df):
-    fgm = player_stats_df["fgm"].sum()
-    fga = player_stats_df["fga"].sum()
-    if fga == 0:
-        return 0
-    return round((fgm / fga) * 100, 1)
-
-
-def calc_3ppct(player_stats_df):
-    three_made = player_stats_df["three_pts_made"].sum()
-    three_att = player_stats_df["three_pts_att"].sum()
-    if three_att == 0:
-        return 0
-    return round((three_made / three_att) * 100, 1)
-
-
-def render_player_page(player_id):
-    player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
-    image_path = Path("player_headshots") / f"{player_id}.png"
-    player_stats = load_player_stats(player_id, "2025-26")
-
-    st.button("← Back", on_click=go_back)
-
-    col1, col2, col3, col4, col5, col6 = st.columns([1.5,2, 1, 1, 1, 1])
-    with col1:
-        st.image(image_path, width='content') 
-
-    with col2:
-        st.header(player["full_name"])
-        st.write(f"""
-                 Position: {player['position']}
-                 <br>
-                 Jersey Number: {player['number']}
-                 <br>
-                 Height: {player['height']}
-                 <br>
-                 Weight: {player['weight']}
-                 """, unsafe_allow_html=True)
-    
-    with col3:
-        ppg = calc_ppg(player_stats)
-        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">PPG</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{ppg}</div>', unsafe_allow_html=True)
-    
-    with col4:
-        apg = calc_apg(player_stats)
-        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">APG</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{apg}</div>', unsafe_allow_html=True)
-
-    with col5:
-        three_pct = calc_3ppct(player_stats)
-        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">3P%</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{three_pct}</div>', unsafe_allow_html=True)
-
-    with col6:
-        fg_pct = calc_fgpct(player_stats)
-        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">FG%</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{fg_pct}</div>', unsafe_allow_html=True)
-
-        # st.write(f"**{fg_pct}%**")
-
-    st.subheader("Season Stats")
-
-    st.dataframe(player_stats, 
-                column_config={
-                "player_id": None,
-                "season": None,
-                "game_date": "Date",
-                "matchup": "Matchup",
-                "wl": "RESULT",
-                "min": "MIN",
-                "pts": "PTS",
-                "fgm": "FGM",
-                "fga": "FGA",
-                "fg_pct": st.column_config.NumberColumn("FG%", format="%.2f"),
-                "three_pts_made": "3PM",
-                "three_pts_att": "3PA",
-                "three_pts_pct": st.column_config.NumberColumn("3P%", format="%.2f"),
-                "ftm": "FTM",
-                "fta": "FTA",
-                "ft_pct": st.column_config.NumberColumn("FT%", format="%.2f"),
-                "oreb": "OREB",
-                "dreb": "DREB",
-                "tot_reb": "REB",
-                "ast": "AST",
-                "stl": "STL",
-                "blk": "BLK",
-                "turnover": "TO",
-                "fouls": "PF"
-                 },
-                 hide_index=True)
-
-
-def show_player_page(player_id):
-    st.button("← Back to Team", on_click=lambda: st.query_params.clear())
-    st.write(f"Player ID: {player_id}")
-
-
-def load_team_schedule(team_id):
-    df = get_team_schedule(team_id)
-    return df
-
-
-def load_team_roster(team_id):
-    df = get_team_roster(team_id)
-    return df
-
-
-def load_player_stats(player_id, curr_season):
-    df = get_player_stats(player_id, curr_season)
-    df['game_date'] = pd.to_datetime(df['game_date']).dt.strftime("%m/%d/%Y")
-    return df
-
-
-def format_schedule(df, team_id, team_name="Lakers"):
-    df = df.copy()
-    df['game_date'] = pd.to_datetime(df['game_date']).dt.strftime("%m/%d/%Y")
-
-    df["Matchup"] = df.apply(
-        lambda row: (
-            f"{team_name} vs {row['away_team_name']}"
-            if row["home_team_id"] == team_id
-            else f"{team_name} @ {row['home_team_name']}"
-        ),
-        axis=1
-    )
-    df["Score"] = df.apply(
-        lambda row: (
-            f"{row['home_team_score']} - {row['away_team_score']}"
-            if row["home_team_id"] == team_id
-            else f"{row['away_team_score']} - {row['home_team_score']}"
-        ),
-        axis=1
-    )
-    df["Result"] = df.apply(
-        lambda row: (
-            "—"
-            if row["game_status"] != "Final"
-            else (
-                "W"
-                if (
-                    (row["home_team_id"] == team_id and row["home_team_score"] > row["away_team_score"])
-                    or
-                    (row["away_team_id"] == team_id and row["away_team_score"] > row["home_team_score"])
-                )
-                else "L"
-            )
-        ),
-        axis=1
-    )
-    df = df.drop(columns=["home_team_id", "away_team_id", "home_team_name", "away_team_name", "home_team_score", "away_team_score"])
-    return df
-
-
-def highlight_lakers_score(row):
-    lal_score, opp_score = map(
-        int,
-        row["Score"].split("-")
-    )
-
-    styles = [""] * len(row)
-
-    score_idx = row.index.get_loc("Score")
-
-    if lal_score > opp_score:
-        styles[score_idx] = "font-weight: bold; color: green"
-    elif lal_score == opp_score:
-        styles[score_idx] = "color: grey"
-    else:
-        styles[score_idx] = "color: red"
-
-    return styles
-
-
-def highlight_preseason(row):
-    if row["game_label"] == "Preseason":
-        return ["color: #B0B0B0"] * len(row)
-    return [""] * len(row)
-
-
 query_params = st.query_params
 
 if "player_id" in query_params:
@@ -289,10 +43,6 @@ lal_team_abbrev = "LAL"
 lal_team_id = all_teams.loc[all_teams['abbreviation'] == lal_team_abbrev, 'id'].iloc[0]
 st.set_page_config(page_title="NBA Player Props", layout="wide")
 
-#@st.cache_data(ttl=3600)
-def load_team_info(team_id):
-    df = get_team_info(team_id)
-    return df
 
 team_df = load_team_info(lal_team_id)
 
@@ -310,9 +60,9 @@ with col2:
 
 
 schedule_df = load_team_schedule(lal_team_id)
-roster_df = load_team_roster(lal_team_id)
 schedule_df = format_schedule(schedule_df, lal_team_id, "Lakers")
 styled_schedule_df = schedule_df.style.apply(highlight_lakers_score, axis=1).apply(highlight_preseason, axis=1)
+roster_df = load_team_roster(lal_team_id)
 
 
 t1, t2, t3, t4 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props"])
@@ -360,7 +110,14 @@ with t3:
     if st.session_state.selected_player is None:
         render_player_list(roster_df)
     else:
-        render_player_page(st.session_state.selected_player)
+        render_player_page(roster_df, st.session_state.selected_player)
 
-
+# with t4:
+#     st.header("Tab 2: Details")
+#     st.write("This tab has its own collapsible sections.")
+#     with st.expander("Expand Section A"):
+#         st.dataframe(roster_df)
+#     with st.expander("Expand Section B"):
+#         st.write("Content for detailed section B.")
+#         st.slider("A slider here", 0, 100)
                     

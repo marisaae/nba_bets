@@ -1,7 +1,7 @@
 from dateutil import parser
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
-from utils import normalize_name, get_json
+from fetch_api.utils.fetch_utils import normalize_name, get_json
 from db.connection import get_connection
 
 import os
