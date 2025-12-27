@@ -60,6 +60,7 @@ def get_player_stats(player_id, curr_season):
     query = """
     SELECT player_id,
            season,
+           game_date,
            matchup,
            wl,
            min,
