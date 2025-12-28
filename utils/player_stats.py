@@ -1,6 +1,7 @@
 import streamlit as st
 from pathlib import Path
 from utils.data_load import load_player_stats
+from utils.charts.pts_chart import render_pts_chart, render_pts_trend_chart
 
 def select_player(player_id):
     st.session_state.selected_player = player_id
@@ -166,3 +167,9 @@ def render_player_page(roster_df, player_id):
                  },
                  hide_index=True)
     st.subheader("Points Performance")
+
+    pts_chart = render_pts_chart(player_stats, player_id)
+    st.plotly_chart(pts_chart, width='stretch')
+
+    pts_trend_chart = render_pts_trend_chart(player_stats, player_id)
+    st.plotly_chart(pts_trend_chart, width='content')

@@ -1,7 +1,4 @@
 import streamlit as st
-import plotly.express as px
-import pandas as pd
-from pathlib import Path
 from fetch_api.nba_fetch import fetch_all_teams
 from utils.player_stats import render_player_list, render_player_page
 from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
