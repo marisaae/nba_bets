@@ -88,12 +88,20 @@ def render_pts_trend_chart(player_stats_df, player_id):
         name="Points per Game",
         marker_color=["purple", "gold"],
     ))
+    fig.update_xaxes(title_font_color="black", linecolor='black', linewidth=1)
+    fig.update_yaxes(title_text="Points per Game", title_font_color="black", linecolor='black', linewidth=1)
 
     fig.update_layout(
-        yaxis_title="Points per Game",
-        title=f"Performance Trend (First {mid} vs Last {game_count - mid} Games)",
+        title={
+        'text': f"Performance Trend (First {mid} vs Last {game_count - mid} Games)",
+        'y': 0.9,       # Vertical position (0 to 1)
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top',
+        'font': {'size': 20, 'color': 'black'}
+        },
         height=600,
-        width=400
+        width=600
     )
 
     fig.add_hline(

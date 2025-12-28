@@ -108,6 +108,7 @@ with t3:
         render_player_list(roster_df)
     else:
         render_player_page(roster_df, st.session_state.selected_player)
+        st.markdown("[Back to Top](#player-overview)")
 
 # with t4:
 #     st.header("Tab 2: Details")

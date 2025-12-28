@@ -105,7 +105,7 @@ def render_player_page(roster_df, player_id):
         st.image(image_path, width='content') 
 
     with col2:
-        st.header(player["full_name"])
+        st.header(player["full_name"], anchor="player-overview")
         st.write(f"""
                  Position: {player['position']}
                  <br>
