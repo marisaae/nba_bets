@@ -2,6 +2,8 @@ import streamlit as st
 from pathlib import Path
 from utils.data_load import load_player_stats
 from utils.charts.pts_chart import render_pts_chart, render_pts_trend_chart
+from utils.charts.shooting_chart import render_shooting_trend
+from utils.calculations import calc_ppg, calc_apg, calc_fgpct, calc_3ppct
 
 def select_player(player_id):
     st.session_state.selected_player = player_id
@@ -18,39 +20,6 @@ def go_back():
 def show_player_page(player_id):
     st.button("← Back to Team", on_click=lambda: st.query_params.clear())
     st.write(f"Player ID: {player_id}")
-
-
-def calc_ppg(player_stats_df):
-    points = player_stats_df["pts"].sum()
-    games = player_stats_df.shape[0]
-    if games == 0:
-        return 0
-    return round(points / games, 1)
-
-
-def calc_apg(player_stats_df):
-    assists = player_stats_df["ast"].sum()
-    games = player_stats_df.shape[0]
-    if games == 0:
-        return 0
-    return round(assists / games, 1)
-
-
-def calc_fgpct(player_stats_df):
-    fgm = player_stats_df["fgm"].sum()
-    fga = player_stats_df["fga"].sum()
-    if fga == 0:
-        return 0
-    return round((fgm / fga) * 100, 1)
-
-
-def calc_3ppct(player_stats_df):
-    three_made = player_stats_df["three_pts_made"].sum()
-    three_att = player_stats_df["three_pts_att"].sum()
-    if three_att == 0:
-        return 0
-    return round((three_made / three_att) * 100, 1)
-
 
 
 def render_player_list(roster_df):
@@ -136,6 +105,16 @@ def render_player_page(roster_df, player_id):
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">FG%</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{fg_pct}</div>', unsafe_allow_html=True)
 
+    left, middle, right = st.columns(3)
+    with left:
+        st.markdown("[Jump to Points Performance](#points-performance)")
+    
+    with middle:
+        st.markdown("[Jump to Shooting Performance](#shooting-performance)")
+
+    with right:
+        st.markdown("[Jump to Playmaking](#playmaking)")
+
     st.subheader("Season Stats")
 
     st.dataframe(player_stats, 
@@ -173,3 +152,11 @@ def render_player_page(roster_df, player_id):
 
     pts_trend_chart = render_pts_trend_chart(player_stats, player_id)
     st.plotly_chart(pts_trend_chart, width='content')
+
+    st.markdown("[Back to Top](#home)")
+
+    st.subheader("Shooting Performance")
+    shooting_trends = render_shooting_trend(player_stats, player_id)
+    st.plotly_chart(shooting_trends, width='stretch')
+
+    st.markdown("[Back to Top](#home)")

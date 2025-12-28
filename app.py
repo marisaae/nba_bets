@@ -51,7 +51,7 @@ with col1:
     st.image("lakers_logo.png", width=200) 
 
 with col2:
-    st.header("Los Angeles Lakers")
+    st.header("Los Angeles Lakers", anchor="home")
     st.write(f"Western Conference Standing: **{standing}**")
     st.write(f"Record: **{record}**")
 
@@ -108,7 +108,6 @@ with t3:
         render_player_list(roster_df)
     else:
         render_player_page(roster_df, st.session_state.selected_player)
-        st.markdown("[Back to Top](#player-overview)")
 
 # with t4:
 #     st.header("Tab 2: Details")
