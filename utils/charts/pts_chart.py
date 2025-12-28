@@ -1,18 +1,18 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from utils.calculations import calc_mid
+from utils.calculations import calc_mid, calc_ppg
 
 def render_pts_chart(player_stats_df, player_id):
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
-    avg_points = player_data["pts"].mean().round(1)
+    avg_points = calc_ppg(player_data)
     min_pts = player_data["pts"].min()
     max_pts = player_data["pts"].max()
     home_pts = player_data[player_data["matchup"].str.contains(" vs. ")]["pts"]
     home_pts_avg = home_pts.mean().round(1)
-    home_game_dates = player_data[player_data["matchup"].str.contains(" vs. ")]["game_date"]
+    home_game_dates = player_data[player_data["matchup"].str.contains(" vs. ")]["game_date"].head(10)
     away_pts = player_data[player_data["matchup"].str.contains(" @ ")]["pts"]
     away_pts_avg = away_pts.mean().round(1)
-    away_game_dates = player_data[player_data["matchup"].str.contains(" @ ")]["game_date"]
+    away_game_dates = player_data[player_data["matchup"].str.contains(" @ ")]["game_date"].head(10)
 
     fig = make_subplots(rows=2, cols=2,
                         specs=[
@@ -20,7 +20,7 @@ def render_pts_chart(player_stats_df, player_id):
                             [{}, None]
                         ], 
                         vertical_spacing=0.35,
-                        subplot_titles=("Home Points Scored", "Home vs. Away Avg Points", "Away Points Scored"))
+                        subplot_titles=("Home Points Scored Last 10 Games", "Season Home vs. Away Avg Points", "Away Points Scored Last 10 Games"))
 
     fig.add_trace(go.Scatter(
         x=home_game_dates,
@@ -75,7 +75,7 @@ def render_pts_chart(player_stats_df, player_id):
 
 def render_pts_trend_chart(player_stats_df, player_id):
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
-    avg_points = player_data["pts"].mean().round(1)
+    avg_points = calc_ppg(player_data)
     
     game_count, mid = calc_mid(player_data)
     first_half = player_data.iloc[:mid]
@@ -102,7 +102,7 @@ def render_pts_trend_chart(player_stats_df, player_id):
 
     fig.update_layout(
         title={
-        'text': f"Performance Trend (First {mid} vs Last {game_count - mid} Games)",
+        'text': f"Points Performance Trend (First {mid} vs Last {game_count - mid} Games)",
         'y': 0.9,
         'x': 0.5,
         'xanchor': 'center',

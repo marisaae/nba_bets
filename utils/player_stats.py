@@ -2,7 +2,8 @@ import streamlit as st
 from pathlib import Path
 from utils.data_load import load_player_stats
 from utils.charts.pts_chart import render_pts_chart, render_pts_trend_chart
-from utils.charts.shooting_chart import render_shooting_trend
+from utils.charts.shooting_chart import render_shooting_trend_chart
+from utils.charts.playmaking_chart import render_playmaking_chart
 from utils.calculations import calc_ppg, calc_apg, calc_fgpct, calc_3ppct
 
 def select_player(player_id):
@@ -106,16 +107,32 @@ def render_player_page(roster_df, player_id):
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{fg_pct}</div>', unsafe_allow_html=True)
 
     left, middle, right = st.columns(3)
+    link_style = """
+        <style>
+        .nav-link {
+            text-align: center;
+            font-weight: bold;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+        .nav-link:hover {
+            color: #E8BC2A;
+        }
+        </style>
+    """
+
+    st.markdown(link_style, unsafe_allow_html=True)
+
     with left:
-        st.markdown("[Jump to Points Performance](#points-performance)")
-    
+        st.markdown('<a style="display:block;" class="nav-link" href="#points-performance">Jump to Points Performance</a>', unsafe_allow_html=True)
+
     with middle:
-        st.markdown("[Jump to Shooting Performance](#shooting-performance)")
+        st.markdown('<a style="display:block;" class="nav-link" href="#shooting-performance">Jump to Shooting Performance</a>', unsafe_allow_html=True)
 
     with right:
-        st.markdown("[Jump to Playmaking](#playmaking)")
+        st.markdown('<a style="display:block;" class="nav-link" href="#playmaking">Jump to Playmaking</a>', unsafe_allow_html=True)
 
-    st.subheader("Season Stats")
+    st.subheader(":violet[Season Stats]", divider="yellow")
 
     st.dataframe(player_stats, 
                 column_config={
@@ -145,7 +162,8 @@ def render_player_page(roster_df, player_id):
                 "fouls": "PF"
                  },
                  hide_index=True)
-    st.subheader("Points Performance")
+    
+    st.subheader(":violet[Points Performance]", divider="yellow")
 
     pts_chart = render_pts_chart(player_stats, player_id)
     st.plotly_chart(pts_chart, width='stretch')
@@ -153,10 +171,16 @@ def render_player_page(roster_df, player_id):
     pts_trend_chart = render_pts_trend_chart(player_stats, player_id)
     st.plotly_chart(pts_trend_chart, width='content')
 
-    st.markdown("[Back to Top](#home)")
+    st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)
 
-    st.subheader("Shooting Performance")
-    shooting_trends = render_shooting_trend(player_stats, player_id)
+    st.subheader(":violet[Shooting Performance]", divider="yellow")
+    shooting_trends = render_shooting_trend_chart(player_stats, player_id)
     st.plotly_chart(shooting_trends, width='stretch')
 
-    st.markdown("[Back to Top](#home)")
+    st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)
+
+    st.subheader(":violet[Playmaking]", divider="yellow")
+    playmaking_chart = render_playmaking_chart(player_stats, player_id)
+    st.plotly_chart(playmaking_chart, width='stretch')
+    st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)
+    

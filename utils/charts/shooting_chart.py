@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.calculations import calc_3ppct, calc_mid, calc_fgpct
 
-def render_shooting_trend(player_stats_df, player_id):
+def render_shooting_trend_chart(player_stats_df, player_id):
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
     avg_3p_pct = calc_3ppct(player_data) / 100
     avg_fg_pct = calc_fgpct(player_data) / 100
@@ -31,8 +31,8 @@ def render_shooting_trend(player_stats_df, player_id):
             insidetextanchor='middle',
             hoverinfo="skip"
         ), row=1, col=1)
-    fig.update_xaxes(title_font_color="black", linecolor='black', linewidth=1)
-    fig.update_yaxes(title_text="3P% per Game", title_font_color="black", linecolor='black', linewidth=1, tickformat='.0%')
+
+    fig.update_yaxes(title_text="FG% per Game", title_font_color="black", linecolor='black', linewidth=1, tickformat='.0%', row=1, col=1)
 
 
     fig.add_trace(go.Bar(
@@ -48,10 +48,10 @@ def render_shooting_trend(player_stats_df, player_id):
     ), row=1, col=2)
 
     fig.update_xaxes(title_font_color="black", linecolor='black', linewidth=1)
-    fig.update_yaxes(title_text="3P% per Game", title_font_color="black", linecolor='black', linewidth=1, tickformat='.0%')
+    fig.update_yaxes(title_text="3P% per Game", title_font_color="black", linecolor='black', linewidth=1, tickformat='.0%', row=1, col=2)
 
     fig.update_annotations(font=dict(size=20, weight="bold", color="black"))
-    
+
     fig.add_hline(
         y=avg_fg_pct,
         line_dash="dot",
