@@ -2,7 +2,7 @@ import streamlit as st
 from fetch_api.nba_fetch import fetch_all_teams
 from utils.player_stats import render_player_list, render_player_page
 from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
-from utils.data_load import load_team_schedule, load_team_roster, load_team_info
+from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props, load_player_props
 
 st.markdown("""
 <style>
@@ -27,6 +27,9 @@ st.markdown("""
 # Initialize session state
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
+
+if "selected_prop_player" not in st.session_state:
+    st.session_state.selected_prop_player = None
 
 query_params = st.query_params
 
@@ -109,12 +112,15 @@ with t3:
     else:
         render_player_page(roster_df, st.session_state.selected_player)
 
-# with t4:
-#     st.header("Tab 2: Details")
-#     st.write("This tab has its own collapsible sections.")
-#     with st.expander("Expand Section A"):
-#         st.dataframe(roster_df)
-#     with st.expander("Expand Section B"):
-#         st.write("Content for detailed section B.")
-#         st.slider("A slider here", 0, 100)
+def render_player_props(roster_df, player_id):
+    player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
+    st.header(player["full_name"])
+
+with t4:
+    if st.session_state.selected_prop_player is None: 
+        df = load_all_player_props()
+        st.dataframe(df)
+    # else:
+    #     # insert render_player_props(df, st.session_state.selected_prop_player)
+        
                     

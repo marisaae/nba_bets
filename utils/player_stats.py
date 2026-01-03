@@ -18,11 +18,6 @@ def go_back():
     st.query_params.clear()
 
 
-def show_player_page(player_id):
-    st.button("← Back to Team", on_click=lambda: st.query_params.clear())
-    st.write(f"Player ID: {player_id}")
-
-
 def render_player_list(roster_df):
     
     roster_df_sorted = roster_df.sort_values(by="full_name")

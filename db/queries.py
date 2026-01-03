@@ -87,3 +87,20 @@ def get_player_stats(player_id, curr_season):
         ORDER BY game_date DESC;
     """
     return pd.read_sql(query, engine, params=(player_id, curr_season))
+
+def get_player_props(player_id):
+    query="""
+    SELECT *
+    FROM front_end_props
+    WHERE player_id = %s
+    ORDER BY game_date DESC;
+    """
+    return pd.read_sql(query, engine, params=(player_id))
+
+def get_all_player_props():
+    query="""
+    SELECT *
+    FROM front_end_props
+    ORDER BY game_date DESC;
+    """
+    return pd.read_sql(query, engine)
