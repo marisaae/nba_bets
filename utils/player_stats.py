@@ -6,7 +6,7 @@ from utils.charts.shooting_chart import render_shooting_trend_chart
 from utils.charts.playmaking_chart import render_playmaking_chart
 from utils.calculations import calc_ppg, calc_apg, calc_fgpct, calc_3ppct
 
-def select_player(player_id):
+def select_player_stat(player_id):
     st.session_state.selected_player = player_id
     st.session_state.page = "player"
     st.query_params["player_id"] = str(player_id)
@@ -53,7 +53,7 @@ def render_player_list(roster_df):
                     width="stretch",
                     key=f"player_{player['player_id']}"
                 ):
-                    select_player(player["player_id"])
+                    select_player_stat(player["player_id"])
 
                 idx += 1
 

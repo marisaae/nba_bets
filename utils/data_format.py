@@ -64,3 +64,24 @@ def highlight_preseason(row):
     if row["game_label"] == "Preseason":
         return ["color: #B0B0B0"] * len(row)
     return [""] * len(row)
+
+
+def consolidate_props(df):
+    pivot_df = (
+        df.pivot_table(
+            index=[
+                "event_id",
+                "game_date",
+                "player_id",
+                "full_name",
+                "market",
+                "point"
+            ],
+            columns="outcome_name",
+            values="price",
+            aggfunc="first"
+        )
+        .reset_index()
+    )
+
+    return pivot_df

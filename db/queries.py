@@ -88,19 +88,37 @@ def get_player_stats(player_id, curr_season):
     """
     return pd.read_sql(query, engine, params=(player_id, curr_season))
 
-def get_player_props(player_id):
+def get_player_props(player_id, event_id):
     query="""
     SELECT *
     FROM front_end_props
-    WHERE player_id = %s
+    WHERE player_id = %s AND event_id = %s
     ORDER BY game_date DESC;
     """
-    return pd.read_sql(query, engine, params=(player_id))
+    return pd.read_sql(query, engine, params=(player_id, event_id))
 
-def get_all_player_props():
+def get_all_player_props(event_id):
     query="""
     SELECT *
     FROM front_end_props
-    ORDER BY game_date DESC;
+    WHERE event_id = %s;
     """
-    return pd.read_sql(query, engine)
+    return pd.read_sql(query, engine, params=(event_id,))
+
+def get_next_game(team_id):
+    query="""
+    SELECT *
+    FROM schedule
+    WHERE (home_team_id = %s OR away_team_id = %s)
+    AND game_date >= CURRENT_DATE
+    AND game_status != 'Final'
+    ORDER BY game_date ASC
+    LIMIT 1;
+    """
+    
+    df = pd.read_sql(query, engine, params=(team_id, team_id))
+
+    if df.empty:
+        return None
+
+    return df.iloc[0].to_dict()

@@ -1,8 +1,12 @@
 import streamlit as st
+import pandas as pd
+import datetime
 from fetch_api.nba_fetch import fetch_all_teams
 from utils.player_stats import render_player_list, render_player_page
 from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
-from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props, load_player_props
+from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props
+from db.queries import get_next_game
+from utils.player_props import render_all_props_page, render_player_props_page
 
 st.markdown("""
 <style>
@@ -19,6 +23,9 @@ st.markdown("""
     font-size: 1.05rem;
     font-weight: 600;
     text-align: center;
+}
+.prop-info {
+    color: #6B6B6B
 }
 
 </style>
@@ -112,15 +119,32 @@ with t3:
     else:
         render_player_page(roster_df, st.session_state.selected_player)
 
-def render_player_props(roster_df, player_id):
-    player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
-    st.header(player["full_name"])
-
 with t4:
-    if st.session_state.selected_prop_player is None: 
-        df = load_all_player_props()
-        st.dataframe(df)
-    # else:
-    #     # insert render_player_props(df, st.session_state.selected_prop_player)
+    # next_game = get_next_game(lal_team_id)
+    next_game = {
+  "event_id": "12a69f98068c9e1b277528c3f7dfed72",
+  "game_date": datetime.date(2025, 12, 30),
+  "home_team_id": 1610612747,
+  "away_team_id": 1610612745,
+  "home_team_name": "Lakers",
+  "away_team_name": "Heat"
+}
+
+    if next_game is None:
+        st.info("No upcoming games scheduled.")
+    else:
+        event_id = next_game["event_id"]
+        next_game_date = pd.to_datetime(next_game["game_date"]).strftime("%m/%d/%Y")
+        if st.session_state.selected_prop_player is None: 
+            all_props = load_all_player_props(event_id)
+            if all_props.empty:
+                st.info(f"No props available yet for the next game on {next_game_date}.")
+            else:
+                st.header(f"Props for next game on {next_game_date}")
+                render_all_props_page(all_props)
+                # need to add info for this - what does this function take in as parameters?
+        else:
+            render_player_props_page(event_id, st.session_state.selected_prop_player)
+            # need to add info for this - what does this function take in as parameters?
         
                     
