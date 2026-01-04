@@ -32,17 +32,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize session state
-if "selected_player" not in st.session_state:
-    st.session_state.selected_player = None
+# Stats tab state
+if "stats_view" not in st.session_state:
+    st.session_state.stats_view = "list"   # "list" | "player"
 
-if "selected_prop_player" not in st.session_state:
-    st.session_state.selected_prop_player = None
+if "selected_player_id" not in st.session_state:
+    st.session_state.selected_player_id = None
 
-query_params = st.query_params
 
-if "player_id" in query_params:
-    st.session_state.selected_player = int(query_params["player_id"])
-    st.session_state.page = "player"
+# Props tab state
+if "props_view" not in st.session_state:
+    st.session_state.props_view = "list"   # "list" | "player"
+
+if "selected_prop_player_id" not in st.session_state:
+    st.session_state.selected_prop_player_id = None
+
+if "selected_prop_market" not in st.session_state:
+    st.session_state.selected_prop_market = None
 
 all_teams = fetch_all_teams()
 
@@ -114,10 +120,11 @@ with t2:
     else: st.warning("Roster data not found.")
 
 with t3:
-    if st.session_state.selected_player is None:
+    if st.session_state.stats_view == "list":
         render_player_list(roster_df)
-    else:
-        render_player_page(roster_df, st.session_state.selected_player)
+
+    elif st.session_state.stats_view == "player":
+        render_player_page(roster_df, st.session_state.selected_player_id)
 
 with t4:
     # next_game = get_next_game(lal_team_id)
@@ -135,7 +142,7 @@ with t4:
     else:
         event_id = next_game["event_id"]
         next_game_date = pd.to_datetime(next_game["game_date"]).strftime("%m/%d/%Y")
-        if st.session_state.selected_prop_player is None: 
+        if st.session_state.props_view == "list":
             all_props = load_all_player_props(event_id)
             if all_props.empty:
                 st.info(f"No props available yet for the next game on {next_game_date}.")
@@ -143,8 +150,11 @@ with t4:
                 st.header(f"Props for next game on {next_game_date}")
                 render_all_props_page(all_props)
                 # need to add info for this - what does this function take in as parameters?
-        else:
-            render_player_props_page(event_id, st.session_state.selected_prop_player)
+        elif st.session_state.props_view == "player":
+            render_player_props_page(
+                st.session_state.selected_prop_player_id,
+                st.session_state.selected_prop_market
+            )
             # need to add info for this - what does this function take in as parameters?
         
                     

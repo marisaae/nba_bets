@@ -3,16 +3,17 @@ from pathlib import Path
 from utils.data_format import consolidate_props
 
 
-def select_player_prop(player_id):
-    st.session_state.selected_player_prop = player_id
-    st.session_state.page = "player"
-    st.query_params["player_id"] = str(player_id)
+def select_player_prop(player_id, market):
+    st.session_state.selected_prop_player_id = player_id
+    st.session_state.selected_prop_market = market
+    st.session_state.props_view = "player"
     st.rerun()
 
 
-def go_back():
-    st.session_state.selected_player_prop = None
-    st.query_params.clear()
+def go_back_to_props_list():
+    st.session_state.selected_prop_player_id = None
+    st.session_state.selected_prop_market = None
+    st.session_state.props_view = "list"
 
 def render_prop_list(market_df):
     images_folder = Path("player_headshots") 
@@ -44,7 +45,10 @@ def render_prop_list(market_df):
                     use_container_width=True,
                     key=f"prop_{player['player_id']}_{player['market']}"
                 ):
-                    select_player_prop(player["player_id"])
+                    select_player_prop(
+                        player_id=player["player_id"],
+                        market=player["market"]
+                    )
 
                 idx += 1
 
@@ -140,4 +144,6 @@ def render_all_props_page(all_props_df):
 
 
 def render_player_props_page(event_id, player_id):
+    # insert player page info with back button
+    st.button("← Back", on_click=go_back_to_props_list)
     return

@@ -7,15 +7,14 @@ from utils.charts.playmaking_chart import render_playmaking_chart
 from utils.calculations import calc_ppg, calc_apg, calc_fgpct, calc_3ppct
 
 def select_player_stat(player_id):
-    st.session_state.selected_player = player_id
-    st.session_state.page = "player"
-    st.query_params["player_id"] = str(player_id)
+    st.session_state.selected_player_id = player_id
+    st.session_state.stats_view = "player"
     st.rerun()
 
 
-def go_back():
-    st.session_state.selected_player = None
-    st.query_params.clear()
+def go_back_to_stats_list():
+    st.session_state.selected_player_id = None
+    st.session_state.stats_view = "list"
 
 
 def render_player_list(roster_df):
@@ -63,7 +62,7 @@ def render_player_page(roster_df, player_id):
     image_path = Path("player_headshots") / f"{player_id}.png"
     player_stats = load_player_stats(player_id, "2025-26")
 
-    st.button("← Back", on_click=go_back)
+    st.button("← Back", on_click=go_back_to_stats_list)
 
     col1, col2, col3, col4, col5, col6 = st.columns([1.5, 2, 1, 1, 1, 1])
     with col1:
