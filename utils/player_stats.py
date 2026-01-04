@@ -101,22 +101,6 @@ def render_player_page(roster_df, player_id):
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{fg_pct}</div>', unsafe_allow_html=True)
 
     left, middle, right = st.columns(3)
-    link_style = """
-        <style>
-        .nav-link {
-            text-align: center;
-            font-weight: bold;
-            padding: 8px 0;
-            font-size: 16px;
-        }
-        .nav-link:hover {
-            color: #E8BC2A;
-        }
-        </style>
-    """
-
-    st.markdown(link_style, unsafe_allow_html=True)
-
     with left:
         st.markdown('<a style="display:block;" class="nav-link" href="#points-performance">Jump to Points Performance</a>', unsafe_allow_html=True)
 

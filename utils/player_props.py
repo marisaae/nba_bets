@@ -1,6 +1,8 @@
 import streamlit as st
+import pandas as pd
 from pathlib import Path
-from utils.data_format import consolidate_props
+from utils.data_format import consolidate_props, format_prop_market
+from utils.data_load import load_player_props
 
 
 def select_player_prop(player_id, market):
@@ -36,7 +38,7 @@ def render_prop_list(market_df):
                 else: st.image("placeholder_headshot.png")
                 
                 st.markdown(
-                    f"<div class='player-name'>{player['full_name']}</div><p class='prop-info'>Line: {player['point']}<br> Over: {player['Over']}<br> Under: {player['Under']}</p>",
+                    f"<div class='player-name'>{player['full_name']}</div><p class='prop-info'><b><span style='color:red;''>Line: {player['point']}</span></b><br> Over: {player['Over']}<br> Under: {player['Under']}</p>",
                     unsafe_allow_html=True
                 )
 
@@ -55,21 +57,6 @@ def render_prop_list(market_df):
 def render_all_props_page(all_props_df):
 
     col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-    link_style = """
-        <style>
-        .nav-link {
-            text-align: center;
-            font-weight: bold;
-            padding: 8px 0;
-            font-size: 16px;
-        }
-        .nav-link:hover {
-            color: #E8BC2A;
-        }
-        </style>
-    """
-
-    st.markdown(link_style, unsafe_allow_html=True)
 
     with col1:
         st.markdown('<a style="display:block;" class="nav-link" href="#points">Jump to Points</a>', unsafe_allow_html=True)
@@ -143,7 +130,35 @@ def render_all_props_page(all_props_df):
     st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)
 
 
-def render_player_props_page(event_id, player_id):
-    # insert player page info with back button
+def render_player_props_page(roster_df, player_id, prop_market, event_id):
     st.button("← Back", on_click=go_back_to_props_list)
+
+    player_props = load_player_props(player_id=player_id, prop_market=prop_market, event_id=event_id)
+    player_props = consolidate_props(player_props)
+    game_date = pd.to_datetime(player_props["game_date"].iloc[0]).strftime("%m/%d/%Y")
+    game_time = player_props["game_status"].iloc[0]
+    market = format_prop_market(prop_market)
+
+    player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
+    image_path = Path("player_headshots") / f"{player_id}.png"
+
+    st.subheader(f"{market} prop for next game on {game_date} at {game_time}")
+    col1, col2, col3, col4, col5, col6 = st.columns([1.5, 2, 1, 1, 1, 1])
+    with col1:
+        st.image(image_path, width='content') 
+
+    with col2:
+        st.header(player["full_name"], anchor="player-overview")
+        st.write(f"""
+                 Position: {player['position']}
+                 <br>
+                 Jersey Number: {player['number']}
+                 <br>
+                 Height: {player['height']}
+                 <br>
+                 Weight: {player['weight']}
+                 """, unsafe_allow_html=True)
+    
+
+    st.dataframe(player_props)
     return

@@ -72,6 +72,7 @@ def consolidate_props(df):
             index=[
                 "event_id",
                 "game_date",
+                "game_status",
                 "player_id",
                 "full_name",
                 "market",
@@ -85,3 +86,16 @@ def consolidate_props(df):
     )
 
     return pivot_df
+
+def format_prop_market(market: str) -> str:
+    CUSTOM_MARKET_NAMES = {
+        "player_points_rebounds_assists": "Pts+Rebs+Asts",
+    }
+
+    if market in CUSTOM_MARKET_NAMES:
+        return CUSTOM_MARKET_NAMES[market]
+
+    if market.startswith("player_"):
+        market = market.replace("player_", "")
+
+    return market.replace("_", " ").title()

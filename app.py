@@ -27,28 +27,35 @@ st.markdown("""
 .prop-info {
     color: #6B6B6B
 }
+.nav-link {
+    text-align: center;
+    font-weight: bold;
+    padding: 8px 0;
+    font-size: 16px;
+}
+.nav-link:hover {
+    color: #E8BC2A;
+}
 
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
-# Stats tab state
+# Stats tab
 if "stats_view" not in st.session_state:
-    st.session_state.stats_view = "list"   # "list" | "player"
-
+    st.session_state.stats_view = "list"
 if "selected_player_id" not in st.session_state:
     st.session_state.selected_player_id = None
 
-
-# Props tab state
+# Props tab
 if "props_view" not in st.session_state:
-    st.session_state.props_view = "list"   # "list" | "player"
-
+    st.session_state.props_view = "list"
 if "selected_prop_player_id" not in st.session_state:
     st.session_state.selected_prop_player_id = None
-
 if "selected_prop_market" not in st.session_state:
     st.session_state.selected_prop_market = None
+if "props_event_id" not in st.session_state:
+    st.session_state.props_event_id = None
 
 all_teams = fetch_all_teams()
 
@@ -127,34 +134,43 @@ with t3:
         render_player_page(roster_df, st.session_state.selected_player_id)
 
 with t4:
-    # next_game = get_next_game(lal_team_id)
-    next_game = {
-  "event_id": "12a69f98068c9e1b277528c3f7dfed72",
-  "game_date": datetime.date(2025, 12, 30),
-  "home_team_id": 1610612747,
-  "away_team_id": 1610612745,
-  "home_team_name": "Lakers",
-  "away_team_name": "Heat"
-}
+    if st.session_state.stats_view != "list":
+        st.session_state.stats_view = "list"
+        st.session_state.selected_player_id = None
+
+    next_game = get_next_game(lal_team_id)
+#     next_game = {
+#   "event_id": "12a69f98068c9e1b277528c3f7dfed72",
+#   "game_date": datetime.date(2025, 12, 30),
+#   "home_team_id": 1610612747,
+#   "away_team_id": 1610612745,
+#   "home_team_name": "Lakers",
+#   "away_team_name": "Heat"
+# }
 
     if next_game is None:
         st.info("No upcoming games scheduled.")
-    else:
-        event_id = next_game["event_id"]
-        next_game_date = pd.to_datetime(next_game["game_date"]).strftime("%m/%d/%Y")
-        if st.session_state.props_view == "list":
-            all_props = load_all_player_props(event_id)
-            if all_props.empty:
-                st.info(f"No props available yet for the next game on {next_game_date}.")
-            else:
-                st.header(f"Props for next game on {next_game_date}")
-                render_all_props_page(all_props)
-                # need to add info for this - what does this function take in as parameters?
-        elif st.session_state.props_view == "player":
-            render_player_props_page(
-                st.session_state.selected_prop_player_id,
-                st.session_state.selected_prop_market
-            )
+        st.stop()
+
+    event_id = next_game["event_id"]
+    st.session_state.props_event_id = event_id
+    next_game_date = pd.to_datetime(next_game["game_date"]).strftime("%m/%d/%Y")
+    next_game_time = next_game["game_status"]
+
+    if st.session_state.props_view == "list":
+        all_props = load_all_player_props(event_id)
+        if all_props.empty:
+            st.info(f"No props available yet for the next game on {next_game_date} at {next_game_time}.")
+        else:
+            st.header(f"Props for next game on {next_game_date} at {next_game_time}")
+            render_all_props_page(all_props)
             # need to add info for this - what does this function take in as parameters?
+    elif st.session_state.props_view == "player":
+
+        render_player_props_page(roster_df,
+            st.session_state.selected_prop_player_id,
+            st.session_state.selected_prop_market,
+            st.session_state.props_event_id
+        )
         
                     

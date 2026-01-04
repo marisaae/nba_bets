@@ -22,8 +22,8 @@ def load_team_info(team_id):
     return df
 
 
-def load_player_props(player_id, event_id):
-    df = get_player_props(player_id, event_id)
+def load_player_props(player_id, event_id, prop_market):
+    df = get_player_props(player_id, event_id, prop_market)
     df['game_date'] = pd.to_datetime(df['game_date']).dt.strftime("%m/%d/%Y")
     return df
 
