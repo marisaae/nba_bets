@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from utils.data_format import consolidate_props, format_prop_market
-from utils.data_load import load_player_props
+from utils.data_load import load_player_props, load_rolling_avg_stats
 
 
 def select_player_prop(player_id, market):
@@ -16,6 +16,27 @@ def go_back_to_props_list():
     st.session_state.selected_prop_player_id = None
     st.session_state.selected_prop_market = None
     st.session_state.props_view = "list"
+
+
+def get_rolling_avg_market(market, player_row):
+    column_map = {
+        "Points": "pts_rolling_avg_over_5",
+        "Rebounds": "reb_rolling_avg_over_5",
+        "Assists": "ast_rolling_avg_over_5",
+        "Pts+Rebs+Asts": "pra_rolling_avg_over_5",
+        "Steals": "stl_rolling_avg_over_5",
+        "Blocks": "blk_rolling_avg_over_5",
+        "3-PT Made": "threes_rolling_avg_over_5",
+    }
+    
+    col_name = column_map.get(market)
+    if col_name is None or col_name not in player_row.columns:
+        return None  # unknown market
+    
+    # Extract value
+    value = player_row.iloc[0][col_name]
+    return value
+
 
 def render_prop_list(market_df):
     images_folder = Path("player_headshots") 
@@ -131,13 +152,19 @@ def render_all_props_page(all_props_df):
 
 
 def render_player_props_page(roster_df, player_id, prop_market, event_id):
-    st.button("← Back", on_click=go_back_to_props_list)
+    st.button(
+    "← Back",
+    key=f"back_props_{st.session_state.selected_prop_player_id}_{st.session_state.selected_prop_market}",
+    on_click=go_back_to_props_list
+)
 
     player_props = load_player_props(player_id=player_id, prop_market=prop_market, event_id=event_id)
     player_props = consolidate_props(player_props)
     game_date = pd.to_datetime(player_props["game_date"].iloc[0]).strftime("%m/%d/%Y")
     game_time = player_props["game_status"].iloc[0]
     market = format_prop_market(prop_market)
+
+    player_rolling_stats_row = load_rolling_avg_stats(player_id)
 
     player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
     image_path = Path("player_headshots") / f"{player_id}.png"
@@ -158,7 +185,31 @@ def render_player_props_page(roster_df, player_id, prop_market, event_id):
                  <br>
                  Weight: {player['weight']}
                  """, unsafe_allow_html=True)
-    
+    with col3:
+        line = player_props["point"].iloc[0]
+        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Line</div>', unsafe_allow_html=True)
+        st.markdown(f'''
+                    <div style="text-align: center;">
+                    <span style="font-weight: bold; font-size: 40px;">{line}</span> {market}</div>
+                     ''', unsafe_allow_html=True)
 
-    st.dataframe(player_props)
+    with col4:
+        last_5_avg = get_rolling_avg_market(market, player_rolling_stats_row)
+        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Last 5 Avg.</div>', unsafe_allow_html=True)
+        st.markdown(f'''
+                    <div style="text-align: center;">
+                    <span style="font-weight: bold; font-size: 40px;">{last_5_avg}</span> {market}</div>
+                    ''', unsafe_allow_html=True)
+
+    with col5:
+        over = player_props["Over"].iloc[0]
+        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Over</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{over}</div>', unsafe_allow_html=True)
+   
+    with col6:
+        under = player_props["Under"].iloc[0]
+        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Under</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{under}</div>', unsafe_allow_html=True)
+
+    
     return

@@ -121,3 +121,15 @@ def get_next_game(team_id):
         return None
 
     return df.iloc[0].to_dict()
+
+def get_rolling_avg_stats(player_id):
+    query="""
+    SELECT *
+    FROM rolling_stats
+    WHERE player_id = %s
+    ORDER BY game_date DESC
+    LIMIT 1;
+    """
+
+    return pd.read_sql(query, engine, params=(player_id,))
+    

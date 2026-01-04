@@ -90,6 +90,7 @@ def consolidate_props(df):
 def format_prop_market(market: str) -> str:
     CUSTOM_MARKET_NAMES = {
         "player_points_rebounds_assists": "Pts+Rebs+Asts",
+        "player_threes": "3-PT Made"
     }
 
     if market in CUSTOM_MARKET_NAMES:

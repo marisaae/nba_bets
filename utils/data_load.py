@@ -1,4 +1,4 @@
-from db.queries import get_team_info, get_team_schedule, get_team_roster, get_player_stats, get_all_player_props, get_player_props
+from db.queries import get_team_info, get_team_schedule, get_team_roster, get_player_stats, get_all_player_props, get_player_props, get_rolling_avg_stats
 import pandas as pd
 
 def load_team_schedule(team_id):
@@ -31,4 +31,8 @@ def load_player_props(player_id, event_id, prop_market):
 def load_all_player_props(event_id):
     df = get_all_player_props(event_id)
     df['game_date'] = pd.to_datetime(df['game_date']).dt.strftime("%m/%d/%Y")
+    return df
+
+def load_rolling_avg_stats(player_id):
+    df = get_rolling_avg_stats(player_id)
     return df
