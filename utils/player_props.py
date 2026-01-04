@@ -236,6 +236,4 @@ def render_player_props_page(roster_df, player_id, prop_market, event_id):
     prop_chart = render_prop_chart(last_5_market_stats, line, market)
     st.plotly_chart(prop_chart, width="content")
 
-    st.dataframe(last_5_market_stats,hide_index=True)
-
     return

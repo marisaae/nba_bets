@@ -58,7 +58,11 @@ def render_pts_chart(player_stats_df, player_id):
     fig.update_xaxes(title_font_color="black", row=1, col=2, linecolor='black', linewidth=1)
     fig.update_yaxes(title_font_color="black", row=1, col=2, linecolor='black', linewidth=1)
 
-    fig.update_layout(height=600, showlegend=False)
+    fig.update_layout(
+        barcornerradius=15, 
+        height=600, 
+        showlegend=False
+        )
     
     fig.update_annotations(font=dict(size=20, weight="bold", color="black"))
 
@@ -109,6 +113,7 @@ def render_pts_trend_chart(player_stats_df, player_id):
         'yanchor': 'top',
         'font': {'size': 20, 'color': 'black'}
         },
+        barcornerradius=15,
         height=600,
         width=600
     )
