@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from utils.data_format import consolidate_props, format_prop_market
-from utils.data_load import load_player_props, load_rolling_avg_stats
+from utils.data_load import load_player_props, load_rolling_avg_stats, load_player_stats
+from utils.charts.props_chart import render_prop_chart
 
 
 def select_player_prop(player_id, market):
@@ -36,6 +37,25 @@ def get_rolling_avg_market(market, player_row):
     # Extract value
     value = player_row.iloc[0][col_name]
     return value
+
+def get_last_5_stat(market, player_stats):
+    column_map = {
+        "Points": "pts",
+        "Rebounds": "tot_reb",
+        "Assists": "ast",
+        "Pts+Rebs+Asts": "pts_reb_ast",
+        "Steals": "stl",
+        "Blocks": "blk",
+        "3-PT Made": "three_pts_made",
+    }
+    
+    col_name = column_map.get(market)
+    if col_name is None or col_name not in player_stats.columns:
+        return None  # unknown market
+    
+    return player_stats[["game_date", "matchup", col_name]].rename(
+        columns={col_name: market}
+    )
 
 
 def render_prop_list(market_df):
@@ -211,5 +231,11 @@ def render_player_props_page(roster_df, player_id, prop_market, event_id):
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Under</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{under}</div>', unsafe_allow_html=True)
 
-    
+    last_5_stats = load_player_stats(player_id, "2025-26").head(5)
+    last_5_market_stats = get_last_5_stat(market, last_5_stats)
+    prop_chart = render_prop_chart(last_5_market_stats, line, market)
+    st.plotly_chart(prop_chart, width="content")
+
+    st.dataframe(last_5_market_stats,hide_index=True)
+
     return

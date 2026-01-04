@@ -81,7 +81,8 @@ def get_player_stats(player_id, curr_season):
            stl,
            blk,
            turnover,
-           fouls
+           fouls,
+           pts_reb_ast
         FROM player_game_log
         WHERE player_id = %s AND season = %s
         ORDER BY game_date DESC;

@@ -137,7 +137,8 @@ def render_player_page(roster_df, player_id):
                 "stl": "STL",
                 "blk": "BLK",
                 "turnover": "TO",
-                "fouls": "PF"
+                "fouls": "PF",
+                "pts_reb_ast": "PRA"
                  },
                  hide_index=True)
     
