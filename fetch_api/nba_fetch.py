@@ -186,7 +186,11 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
             time.sleep(random.uniform(0.7, 1.4))
             player_log = playergamelog.PlayerGameLog(player_id=player_id, season=season)
             player_log_df = player_log.get_data_frames()[0].drop(columns=['PLUS_MINUS', 'VIDEO_AVAILABLE'])
-            player_log_df['GAME_DATE'] = pd.to_datetime(player_log_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
+            player_log_df['GAME_DATE'] = pd.to_datetime(player_log_df['GAME_DATE'])
+            player_log_df['is_b2b'] = (player_log_df["GAME_DATE"].diff().dt.days == 1)
+            
+            player_log_df['GAME_DATE'] = player_log_df['GAME_DATE'].dt.strftime('%Y-%m-%d')
+            print(player_log_df)
             break   
         except Exception as e:
             print(f"Attempt {attempt+1} failed for player ID {player_id}: {e}")
@@ -221,12 +225,15 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
             tov = log_row['TOV']
             pf = log_row['PF']
             pra = log_row['PTS'] + log_row['REB'] + log_row['AST']
-            
-            rows_to_insert.append((player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, tov, pf, pra))
+            is_home = "vs" in log_row['MATCHUP']
+            is_b2b = log_row['is_b2b']
+            opp_team_abbrev = log_row['MATCHUP'].split(' ')[2]
+
+            rows_to_insert.append((player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, tov, pf, pra, is_home, is_b2b, opp_team_abbrev))
     
     query = """
-        INSERT INTO player_game_log (player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO player_game_log (player_id, game_id, game_date, season, matchup, wl, min, pts, fgm, fga, fg_pct, three_pts_made, three_pts_att, three_pts_pct, ftm, fta, ft_pct, oreb, dreb, tot_reb, ast, stl, blk, turnover, fouls, pts_reb_ast, is_home, is_b2b, opp_team_abbrev)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (game_id, player_id) DO UPDATE SET
             wl = EXCLUDED.wl,
             min = EXCLUDED.min,
@@ -249,6 +256,9 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
             turnover = EXCLUDED.turnover,
             fouls = EXCLUDED.fouls,
             pts_reb_ast = EXCLUDED.pts_reb_ast,
+            is_home = EXCLUDED.is_home,
+            is_b2b = EXCLUDED.is_b2b,
+            opp_team_abbrev = EXCLUDED.opp_team_abbrev,
             last_updated = NOW();
         """       
     cur.executemany(query, rows_to_insert)

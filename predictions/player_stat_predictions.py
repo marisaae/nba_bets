@@ -5,6 +5,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, r2_score
 import os
 from dotenv import load_dotenv
+from tabulate import tabulate
 
 pd.set_option("display.max_columns", None)
 
@@ -33,7 +34,7 @@ merged_model_stats = merged_model_stats.drop(columns=["opp_team_id", "team_id", 
 merged_model_stats = merged_model_stats.rename(columns={"win_pct": "opp_wins_pct"})
 merged_model_stats = merged_model_stats.fillna(0)
 
-# print(tabulate(merged_model_stats,headers='keys', tablefmt='fancy_grid'))
+print(tabulate(merged_model_stats,headers='keys', tablefmt='fancy_grid'))
 
 players = merged_model_stats["full_name"].unique()
 
@@ -96,46 +97,46 @@ STAT_CONFIGS = {
 models = {}
 metrics = {}
 
-for stat, cfg in STAT_CONFIGS.items():
-    X = merged_model_stats[cfg["features"]]
-    y = merged_model_stats[cfg["target"]]
+# for stat, cfg in STAT_CONFIGS.items():
+#     X = merged_model_stats[cfg["features"]]
+#     y = merged_model_stats[cfg["target"]]
 
-    X_train = train_df[cfg["features"]]
-    y_train = train_df[cfg["target"]].astype(float)
+#     X_train = train_df[cfg["features"]]
+#     y_train = train_df[cfg["target"]].astype(float)
 
-    X_test = test_df[cfg["features"]]
-    y_test = test_df[cfg["target"]].astype(float)
+#     X_test = test_df[cfg["features"]]
+#     y_test = test_df[cfg["target"]].astype(float)
 
-    model = Ridge(alpha=1.0)
-    model.fit(X_train, y_train)
+#     model = Ridge(alpha=1.0)
+#     model.fit(X_train, y_train)
 
-    test_preds = model.predict(X_test)
+#     test_preds = model.predict(X_test)
 
-    models[stat] = model
+#     models[stat] = model
 
-    metrics[stat] = {
-        "MAE": mean_absolute_error(y_test, test_preds),
-        "R2": r2_score(y_test, test_preds),
-    }
+#     metrics[stat] = {
+#         "MAE": mean_absolute_error(y_test, test_preds),
+#         "R2": r2_score(y_test, test_preds),
+#     }
 
-    print(f"\n=== {stat.upper()} MODEL ===")
-    print("MAE:", round(metrics[stat]["MAE"], 2))
-    print("R² :", round(metrics[stat]["R2"], 2))
+#     print(f"\n=== {stat.upper()} MODEL ===")
+#     print("MAE:", round(metrics[stat]["MAE"], 2))
+#     print("R² :", round(metrics[stat]["R2"], 2))
 
-for stat, cfg in STAT_CONFIGS.items():
-    merged_model_stats[f"predicted_{stat}"] = models[stat].predict(
-        merged_model_stats[cfg["features"]]
-    )
+# for stat, cfg in STAT_CONFIGS.items():
+#     merged_model_stats[f"predicted_{stat}"] = models[stat].predict(
+#         merged_model_stats[cfg["features"]]
+#     )
 
-results = merged_model_stats[[
-    "full_name", "game_date",
-    "pts", "predicted_points",
-    "tot_reb", "predicted_rebounds",
-    "ast", "predicted_assists",
-    "pts_reb_ast", "predicted_pra",
-    "blk", "predicted_blocks",
-    "stl", "predicted_steals",
-    "three_pts_made", "predicted_threes"
-]].sort_values(["full_name", "game_date"])
+# results = merged_model_stats[[
+#     "full_name", "game_date",
+#     "pts", "predicted_points",
+#     "tot_reb", "predicted_rebounds",
+#     "ast", "predicted_assists",
+#     "pts_reb_ast", "predicted_pra",
+#     "blk", "predicted_blocks",
+#     "stl", "predicted_steals",
+#     "three_pts_made", "predicted_threes"
+# ]].sort_values(["full_name", "game_date"])
 
-print(results.head(50))
+# print(results.head(50))
