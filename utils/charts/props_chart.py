@@ -21,7 +21,8 @@ def render_prop_chart(last_5_stats, prop_line, market):
                 x=x_labels, 
                 y=stats,
                 marker_color=colors,
-                hoverinfo="skip",
+                meta=market,
+                hovertemplate=("%{meta}: %{y}<extra></extra>"),
                 texttemplate="%{y}",
                 textposition="inside",
                 textfont=dict(size=18)
@@ -34,11 +35,23 @@ def render_prop_chart(last_5_stats, prop_line, market):
     fig.add_hline(
         y=prop_line,
         line_dash="dot",
-        line_color="black",
-        annotation_text=f"Prop Line: {prop_line}",
-        annotation_position="top right"
+        line_color="black"
     )
-    fig.update_annotations(font=dict(color="black"))
+
+    last_x = x_labels[0]
+    fig.add_annotation(
+        x=last_x,
+        y=prop_line,
+        xref="x",
+        yref="y",
+        text=f"Prop Line: <b>{prop_line}</b>",
+        showarrow=False,
+        xanchor="left",
+        yanchor="middle",
+        xshift=50,
+        font=dict(size=14, color="black"),
+        bgcolor="white"
+    )
 
     fig.update_layout(
         title={

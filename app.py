@@ -19,7 +19,7 @@ st.markdown("""
     width: 100%;
     border: 2px solid purple;
 }
-.player-name {
+.player-name, .market-name {
     font-size: 1.05rem;
     font-weight: 600;
     text-align: center;
@@ -134,14 +134,15 @@ with t3:
         render_player_page(roster_df, st.session_state.selected_player_id)
 
 with t4:
-    if st.session_state.stats_view != "list":
-        st.session_state.stats_view = "list"
-        st.session_state.selected_player_id = None
+    # if st.session_state.stats_view != "list":
+    #     st.session_state.stats_view = "list"
+    #     st.session_state.selected_player_id = None
 
     next_game = get_next_game(lal_team_id)
 #     next_game = {
 #   "event_id": "12a69f98068c9e1b277528c3f7dfed72",
 #   "game_date": datetime.date(2025, 12, 30),
+#   "game_status": "10:00am EST",
 #   "home_team_id": 1610612747,
 #   "away_team_id": 1610612745,
 #   "home_team_name": "Lakers",
@@ -156,9 +157,9 @@ with t4:
     st.session_state.props_event_id = event_id
     next_game_date = pd.to_datetime(next_game["game_date"]).strftime("%m/%d/%Y")
     next_game_time = next_game["game_status"]
+    all_props = load_all_player_props(event_id)
 
     if st.session_state.props_view == "list":
-        all_props = load_all_player_props(event_id)
         if all_props.empty:
             st.info(f"No props available yet for the next game on {next_game_date} at {next_game_time}.")
         else:
@@ -166,11 +167,9 @@ with t4:
             render_all_props_page(all_props)
             # need to add info for this - what does this function take in as parameters?
     elif st.session_state.props_view == "player":
-
-        render_player_props_page(roster_df,
+        render_player_props_page(all_props, roster_df,
             st.session_state.selected_prop_player_id,
             st.session_state.selected_prop_market,
             st.session_state.props_event_id
         )
-        
                     

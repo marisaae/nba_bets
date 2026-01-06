@@ -125,5 +125,6 @@ def render_pts_trend_chart(player_stats_df, player_id):
         annotation_text=f"Season Avg: {avg_points}",
         annotation_position="top right"
         )
+    
 
     return fig
