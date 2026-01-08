@@ -6,15 +6,15 @@ from sklearn.metrics import mean_absolute_error, r2_score
 import os
 from dotenv import load_dotenv
 from tabulate import tabulate
+import datetime
 
 pd.set_option("display.max_columns", None)
-
 
 load_dotenv()
 dsn = os.getenv("SQLALCHEMY_URL")
 engine = create_engine(dsn)
 
-query_model = "SELECT * FROM model_player_stats;"
+query_model = "SELECT * FROM model_player_stats WHERE game_date <= DATE '2026-01-05';"
 query_def = "SELECT * FROM team_def_stats;"
 
 model_stats_df = pd.read_sql(query_model, engine)
@@ -32,17 +32,11 @@ merged_model_stats = model_stats_df.merge(
 
 merged_model_stats = merged_model_stats.drop(columns=["opp_team_id", "team_id", "team_name", "gp", "opp_player_position", "last_updated"])
 merged_model_stats = merged_model_stats.rename(columns={"win_pct": "opp_wins_pct"})
+merged_model_stats['game_date'] = pd.to_datetime(merged_model_stats['game_date'])
+
 merged_model_stats = merged_model_stats.fillna(0)
 
-print(tabulate(merged_model_stats,headers='keys', tablefmt='fancy_grid'))
-
-players = merged_model_stats["full_name"].unique()
-
-train_players, test_players = train_test_split(players, test_size=0.2, random_state=42)
-
-train_df = merged_model_stats[merged_model_stats["full_name"].isin(train_players)]
-test_df = merged_model_stats[merged_model_stats["full_name"].isin(test_players)]
-
+cutoff = datetime.date(2025, 1, 1)
 STAT_CONFIGS = {
     "points": {
         "target": "pts",
@@ -93,50 +87,61 @@ STAT_CONFIGS = {
         ]
     }
 }
+def train_models(cutoff, STAT_CONFIGS):
+    train_df = merged_model_stats[merged_model_stats["game_date"].dt.date <= cutoff]
+    test_df = merged_model_stats[merged_model_stats["game_date"].dt.date > cutoff]
 
-models = {}
-metrics = {}
 
-# for stat, cfg in STAT_CONFIGS.items():
-#     X = merged_model_stats[cfg["features"]]
-#     y = merged_model_stats[cfg["target"]]
+    models = {}
+    metrics = {}
 
-#     X_train = train_df[cfg["features"]]
-#     y_train = train_df[cfg["target"]].astype(float)
+    for stat, cfg in STAT_CONFIGS.items():
+        X_train = train_df[cfg["features"]]
+        y_train = train_df[cfg["target"]].astype(float)
 
-#     X_test = test_df[cfg["features"]]
-#     y_test = test_df[cfg["target"]].astype(float)
+        X_test = test_df[cfg["features"]]
+        y_test = test_df[cfg["target"]].astype(float)
 
-#     model = Ridge(alpha=1.0)
-#     model.fit(X_train, y_train)
+        model = Ridge(alpha=1.0)
+        model.fit(X_train, y_train)
 
-#     test_preds = model.predict(X_test)
+        test_preds = model.predict(X_test)
 
-#     models[stat] = model
+        models[stat] = model
 
-#     metrics[stat] = {
-#         "MAE": mean_absolute_error(y_test, test_preds),
-#         "R2": r2_score(y_test, test_preds),
-#     }
+        metrics[stat] = {
+            "MAE": mean_absolute_error(y_test, test_preds),
+            "R2": r2_score(y_test, test_preds),
+        }
+# ------ print and see results ------
 
-#     print(f"\n=== {stat.upper()} MODEL ===")
-#     print("MAE:", round(metrics[stat]["MAE"], 2))
-#     print("R² :", round(metrics[stat]["R2"], 2))
+        # print(f"\n=== {stat.upper()} MODEL ===")
+        # print("MAE:", round(metrics[stat]["MAE"], 2))
+        # print("R² :", round(metrics[stat]["R2"], 2))
 
-# for stat, cfg in STAT_CONFIGS.items():
-#     merged_model_stats[f"predicted_{stat}"] = models[stat].predict(
-#         merged_model_stats[cfg["features"]]
-#     )
+    # for stat, cfg in STAT_CONFIGS.items():
+    #     merged_model_stats[f"predicted_{stat}"] = models[stat].predict(
+    #         merged_model_stats[cfg["features"]]
+    #     )
 
-# results = merged_model_stats[[
-#     "full_name", "game_date",
-#     "pts", "predicted_points",
-#     "tot_reb", "predicted_rebounds",
-#     "ast", "predicted_assists",
-#     "pts_reb_ast", "predicted_pra",
-#     "blk", "predicted_blocks",
-#     "stl", "predicted_steals",
-#     "three_pts_made", "predicted_threes"
-# ]].sort_values(["full_name", "game_date"])
+    # results = merged_model_stats[[
+    #     "full_name", "game_date",
+    #     "pts", "predicted_points",
+    #     "tot_reb", "predicted_rebounds",
+    #     "ast", "predicted_assists",
+    #     "pts_reb_ast", "predicted_pra",
+    #     "blk", "predicted_blocks",
+    #     "stl", "predicted_steals",
+    #     "three_pts_made", "predicted_threes"
+    # ]].sort_values(["full_name", "game_date"])
 
-# print(results.head(50))
+    # print(results.head(50))
+
+    model.fit(merged_model_stats[cfg["features"]], merged_model_stats[cfg["target"]])
+    
+    models[stat] = model
+
+    save_models(models)
+    return metrics
+
+model = train_models(cutoff, STAT_CONFIGS)

@@ -30,7 +30,7 @@ def render_prop_chart(last_5_stats, prop_line, market):
             ])
     
     fig.update_xaxes(title_text=f"<b>{avg_stat}</b> avg last 5",title_font_color="black", title_font_size=18,autorange="reversed", linecolor='black', linewidth=1, tickfont=dict(size=14))
-    fig.update_yaxes(title_text=f"{market}", title_font_color="black", linecolor='black', linewidth=1, range=[min_range-5, max_range + 5])
+    fig.update_yaxes(title_text=f"{market}", title_font_color="black", linecolor='black', linewidth=1, range=[0, max_range + 5])
 
     fig.add_hline(
         y=prop_line,

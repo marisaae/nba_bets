@@ -55,6 +55,7 @@ def run_all():
             cur.execute("REFRESH MATERIALIZED VIEW player_odds_pivot;")
             cur.execute("REFRESH MATERIALIZED VIEW model_player_stats;")
             cur.execute("REFRESH MATERIALIZED VIEW front_end_props;")
+            cur.execute("REFRESH MATERIALIZED VIEW future_games;")
 
             print("Materialized views updated.")
 
