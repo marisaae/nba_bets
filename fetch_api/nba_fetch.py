@@ -188,10 +188,8 @@ def fetch_player_game_logs(player_id, season, cur, max_retries=3, wait_seconds=5
             player_log_df = player_log.get_data_frames()[0].drop(columns=['PLUS_MINUS', 'VIDEO_AVAILABLE'])
             player_log_df['GAME_DATE'] = pd.to_datetime(player_log_df['GAME_DATE'])
             player_log_df = player_log_df.sort_values("GAME_DATE").reset_index(drop=True)
-            player_log_df['is_b2b'] = (player_log_df["GAME_DATE"].diff().dt.days == 1)
-            
+            player_log_df['is_b2b'] = (player_log_df["GAME_DATE"].diff().dt.days == 1)         
             player_log_df['GAME_DATE'] = player_log_df['GAME_DATE'].dt.strftime('%Y-%m-%d')
-            print(player_log_df)
             break   
         except Exception as e:
             print(f"Attempt {attempt+1} failed for player ID {player_id}: {e}")

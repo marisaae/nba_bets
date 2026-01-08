@@ -7,8 +7,14 @@ import os
 from dotenv import load_dotenv
 from tabulate import tabulate
 import datetime
+import joblib
 
-pd.set_option("display.max_columns", None)
+def save_models(models, folder="models"):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    for stat, model in models.items():
+        path = os.path.join(folder, f"{stat}_ridge_model.pkl")
+        joblib.dump(model, path)
 
 load_dotenv()
 dsn = os.getenv("SQLALCHEMY_URL")
@@ -91,7 +97,6 @@ def train_models(cutoff, STAT_CONFIGS):
     train_df = merged_model_stats[merged_model_stats["game_date"].dt.date <= cutoff]
     test_df = merged_model_stats[merged_model_stats["game_date"].dt.date > cutoff]
 
-
     models = {}
     metrics = {}
 
@@ -142,6 +147,7 @@ def train_models(cutoff, STAT_CONFIGS):
     models[stat] = model
 
     save_models(models)
-    return metrics
+    print("Models trained and saved")
 
-model = train_models(cutoff, STAT_CONFIGS)
+if __name__ == "__main__":
+    train_models(cutoff, STAT_CONFIGS)

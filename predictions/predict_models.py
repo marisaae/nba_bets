@@ -1,35 +1,23 @@
 import pandas as pd
-from sqlalchemy import create_engine
 import joblib
-import os
-from dotenv import load_dotenv
 from tabulate import tabulate
+from pathlib import Path
 
-load_dotenv()
-dsn = os.getenv("SQLALCHEMY_URL")
-engine = create_engine(dsn)
+BASE_DIR = Path(__file__).resolve().parents[1]
+MODEL_DIR = BASE_DIR / "models"
 
-query_model = "SELECT * FROM future_games;"
-query_def = "SELECT * FROM team_def_stats;"
+def load_models():
+    if not MODEL_DIR.exists():
+        raise FileNotFoundError(f"Models directory not found: {MODEL_DIR}")
 
-future_games_df = pd.read_sql(query_model, engine)
-def_stats_df = pd.read_sql(query_def, engine)
+    models = {}
+    for file in MODEL_DIR.iterdir():
+        if file.name.endswith(".pkl"):
+            stat = file.name.replace("_ridge_model.pkl", "")
+            models[stat] = joblib.load(file)
+    
+    return models
 
-future_games_df["primary_position"] = future_games_df["position"].str.split("-").str[0]
-future_games_df = future_games_df.drop(columns=["position"])
-
-prediction_df = future_games_df.merge(
-    def_stats_df,
-    left_on=["opp_team_id", "primary_position", "season"],
-    right_on=["team_id", "opp_player_position", "season"],
-    how="left"
-)
-
-prediction_df = prediction_df.drop(columns=["opp_team_id", "team_id", "team_name", "gp", "opp_player_position", "last_updated"])
-prediction_df = prediction_df.rename(columns={"win_pct": "opp_wins_pct"})
-prediction_df = prediction_df.fillna(0)
-
-print(tabulate(prediction_df,headers='keys', tablefmt='fancy_grid'))
 
 STAT_CONFIGS = {
     "points": {
@@ -81,12 +69,19 @@ STAT_CONFIGS = {
         ]
     }
 }
+def predict_next_game(STAT_CONFIGS, prediction_df):
+    models = load_models()
 
-models = joblib.load("models.pkl")
+    df = prediction_df.copy()
 
-future_df = pd.read_sql("SELECT * FROM next_game_features_mv", engine)
+    for stat, cfg in STAT_CONFIGS.items():
+        df[f"predicted_{stat}"] = models[stat].predict(
+            df[cfg["features"]]
+        )
+    # output_path = BASE_DIR / "outputs" / "predictions_preview.csv"
+    # output_path.parent.mkdir(exist_ok=True)
 
-for stat, cfg in STAT_CONFIGS.items():
-    future_df[f"predicted_{stat}"] = models[stat].predict(
-        future_df[cfg["features"]]
-    )
+    # df.to_csv(output_path, index=False)
+    # print(f"Saved to {output_path}")
+
+    return df

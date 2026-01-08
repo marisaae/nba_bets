@@ -1,12 +1,15 @@
 import streamlit as st
 import pandas as pd
-import datetime
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from fetch_api.nba_fetch import fetch_all_teams
 from utils.player_stats import render_player_list, render_player_page
-from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
+from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason, format_predictions
 from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props
 from db.queries import get_next_game
 from utils.player_props import render_all_props_page, render_player_props_page
+from predictions.predict_models import predict_next_game, STAT_CONFIGS
 
 st.markdown("""
 <style>
@@ -85,7 +88,7 @@ styled_schedule_df = schedule_df.style.apply(highlight_lakers_score, axis=1).app
 roster_df = load_team_roster(lal_team_id)
 
 
-t1, t2, t3, t4 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props"])
+t1, t2, t3, t4, t5 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props", "PLayer Predictions"])
 
 with t1:
     if not schedule_df.empty:
@@ -172,4 +175,18 @@ with t4:
             st.session_state.selected_prop_market,
             st.session_state.props_event_id
         )
-                    
+
+with t5:
+    load_dotenv()
+    dsn = os.getenv("SQLALCHEMY_URL")
+    engine = create_engine(dsn)
+
+    query = "SELECT * FROM future_games;"
+
+    prediction_df = pd.read_sql(query, engine)
+    prediction_df = prediction_df.fillna(0)
+
+    predictions = predict_next_game(STAT_CONFIGS, prediction_df)
+    predictions_format = format_predictions(predictions)
+
+    st.dataframe(predictions_format)

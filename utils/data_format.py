@@ -100,3 +100,15 @@ def format_prop_market(market: str) -> str:
         market = market.replace("player_", "")
 
     return market.replace("_", " ").title()
+
+def round_predictions(num):
+    return round(num,2)
+
+def format_predictions(predictions_df):
+    df = predictions_df.copy()
+
+    cols_to_format = ["predicted_points", "predicted_rebounds", "predicted_assists", "predicted_pra", "predicted_blocks", "predicted_steals", "predicted_threes"]
+    for col in cols_to_format:
+        df[col] = df[col].apply(lambda x: max(round(x, 2), 0))
+
+    return df
