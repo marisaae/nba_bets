@@ -107,8 +107,10 @@ def round_predictions(num):
 def format_predictions(predictions_df):
     df = predictions_df.copy()
 
-    cols_to_format = ["predicted_points", "predicted_rebounds", "predicted_assists", "predicted_pra", "predicted_blocks", "predicted_steals", "predicted_threes"]
+    cols_to_format = ["pred_pts", "pred_rebs", "pred_asts", "pred_pra", "pred_blks", "pred_stls", "pred_three"]
     for col in cols_to_format:
         df[col] = df[col].apply(lambda x: max(round(x, 2), 0))
+
+    df = df.drop(columns=["last_updated"])
 
     return df

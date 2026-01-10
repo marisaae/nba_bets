@@ -3,6 +3,8 @@ import joblib
 from tabulate import tabulate
 from pathlib import Path
 
+
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODEL_DIR = BASE_DIR / "models"
 
@@ -69,10 +71,10 @@ STAT_CONFIGS = {
         ]
     }
 }
-def predict_next_game(STAT_CONFIGS, prediction_df):
+def predict_next_game(STAT_CONFIGS, future_game_df):
     models = load_models()
 
-    df = prediction_df.copy()
+    df = future_game_df.copy()
 
     for stat, cfg in STAT_CONFIGS.items():
         df[f"predicted_{stat}"] = models[stat].predict(
@@ -85,3 +87,58 @@ def predict_next_game(STAT_CONFIGS, prediction_df):
     # print(f"Saved to {output_path}")
 
     return df
+
+
+def log_prediction(prediction_df, cur):
+    rows_to_insert = []
+
+    df = prediction_df[[
+    "full_name",
+    "player_id",
+    "game_id",
+    "game_date",
+    "predicted_points",
+    "predicted_rebounds",
+    "predicted_assists",
+    "predicted_pra",
+    "predicted_blocks",
+    "predicted_steals",
+    "predicted_threes",
+    ]].copy()
+
+    df["game_date"] = pd.to_datetime(df["game_date"])
+
+    if not df.empty:
+        for _, row in df.iterrows():
+            player_name = row["full_name"]
+            player_id = row["player_id"]
+            game_id = row["game_id"]
+            game_date = row["game_date"]
+            pred_pts = row["predicted_points"]
+            pred_rebs = row["predicted_rebounds"]
+            pred_asts = row["predicted_assists"]
+            pred_pra = row["predicted_pra"]
+            pred_blks = row["predicted_blocks"]
+            pred_stls = row["predicted_steals"]
+            pred_threes = row["predicted_threes"]
+        
+            rows_to_insert.append((player_name, player_id, game_id, game_date, pred_pts, pred_rebs, pred_asts, pred_pra, pred_blks, pred_stls, pred_threes))
+    else:
+        print("No predictions to insert.")
+
+    query = """
+        INSERT INTO player_prediction_log (player_name, player_id, game_id, game_date, pred_pts, pred_rebs, pred_asts, pred_pra, pred_blks, pred_stls, pred_three)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        ON CONFLICT (player_id, game_id) DO UPDATE SET
+            pred_pts = EXCLUDED.pred_pts,
+            pred_rebs = EXCLUDED.pred_rebs,
+            pred_asts = EXCLUDED.pred_asts,
+            pred_pra = EXCLUDED.pred_pra,
+            pred_blks = EXCLUDED.pred_blks,
+            pred_stls = EXCLUDED.pred_stls,
+            pred_three = EXCLUDED.pred_three,
+            last_updated = NOW();
+        """
+    cur.executemany(query, rows_to_insert)
+
+    print("Successfully logged player predictions.")

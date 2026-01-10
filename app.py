@@ -88,7 +88,7 @@ styled_schedule_df = schedule_df.style.apply(highlight_lakers_score, axis=1).app
 roster_df = load_team_roster(lal_team_id)
 
 
-t1, t2, t3, t4, t5 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props", "PLayer Predictions"])
+t1, t2, t3, t4, t5 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props", "Player Predictions"])
 
 with t1:
     if not schedule_df.empty:
@@ -181,12 +181,14 @@ with t5:
     dsn = os.getenv("SQLALCHEMY_URL")
     engine = create_engine(dsn)
 
-    query = "SELECT * FROM future_games;"
+    query = """
+    SELECT *
+    FROM player_prediction_log
+    WHERE game_date >= CURRENT_DATE
+    ORDER BY game_date, player_name
+    """
 
-    prediction_df = pd.read_sql(query, engine)
-    prediction_df = prediction_df.fillna(0)
-
-    predictions = predict_next_game(STAT_CONFIGS, prediction_df)
+    predictions = pd.read_sql(query, engine)
     predictions_format = format_predictions(predictions)
 
-    st.dataframe(predictions_format)
+    st.dataframe(predictions_format, hide_index=True)
