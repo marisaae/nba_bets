@@ -99,10 +99,13 @@ def format_prop_market(market: str) -> str:
     if market.startswith("player_"):
         market = market.replace("player_", "")
 
-    return market.replace("_", " ").title()
+    return market.title()
+    # return market.replace("_", " ").title()
+
 
 def round_predictions(num):
     return round(num,2)
+
 
 def format_predictions(predictions_df):
     df = predictions_df.copy()
@@ -110,7 +113,8 @@ def format_predictions(predictions_df):
     cols_to_format = ["pred_pts", "pred_rebs", "pred_asts", "pred_pra", "pred_blks", "pred_stls", "pred_three"]
     for col in cols_to_format:
         df[col] = df[col].apply(lambda x: max(round(x, 2), 0))
-
+    
+    df['game_date'] = pd.to_datetime(df['game_date']).dt.strftime("%m/%d/%Y")
     df = df.drop(columns=["last_updated"])
 
     return df

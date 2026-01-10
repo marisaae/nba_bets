@@ -1,9 +1,12 @@
 import plotly.graph_objects as go
 import pandas as pd
 
-def render_prop_chart(last_5_stats, prop_line, market):
-    min_range = last_5_stats[market].min()
+def render_prop_chart(last_5_stats, prop_line, market, prediction):
     max_range = last_5_stats[market].max()
+
+    diff = abs(prediction - prop_line)
+    offset = 6 if diff < .5 else 0
+
     stats = last_5_stats[market]
     avg_stat = stats.mean().round(1)
     opp = last_5_stats["matchup"].str.split().str[-1]
@@ -49,6 +52,27 @@ def render_prop_chart(last_5_stats, prop_line, market):
         xanchor="left",
         yanchor="middle",
         xshift=50,
+        yshift=offset,
+        font=dict(size=14, color="black"),
+        bgcolor="white"
+    )
+
+    fig.add_hline(
+        y=prediction,
+        line_dash="longdash",
+        line_color="black"
+    )
+    fig.add_annotation(
+        x=last_x,
+        y=prediction,
+        xref="x",
+        yref="y",
+        text=f"Prediction: <b>{prediction}</b>",
+        showarrow=False,
+        xanchor="left",
+        yanchor="middle",
+        xshift=50,
+        yshift=-(offset),
         font=dict(size=14, color="black"),
         bgcolor="white"
     )

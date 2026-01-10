@@ -1,10 +1,10 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 from pathlib import Path
 from utils.data_format import consolidate_props, format_prop_market
-from utils.data_load import load_rolling_avg_stats, load_player_stats
+from utils.data_load import load_rolling_avg_stats, load_player_stats, load_player_prediction
 from utils.charts.props_chart import render_prop_chart
+from utils.market_mappings import MARKET_TO_ROLLING_COL, MARKET_TO_LAST_5
 
 
 def select_player_prop(player_id, market):
@@ -21,38 +21,20 @@ def go_back_to_props_list():
 
 
 def get_rolling_avg_market(market, player_row):
-    column_map = {
-        "Points": "pts_rolling_avg_over_5",
-        "Rebounds": "reb_rolling_avg_over_5",
-        "Assists": "ast_rolling_avg_over_5",
-        "Pts+Rebs+Asts": "pra_rolling_avg_over_5",
-        "Steals": "stl_rolling_avg_over_5",
-        "Blocks": "blk_rolling_avg_over_5",
-        "3-PT Made": "threes_rolling_avg_over_5",
-    }
-    
-    col_name = column_map.get(market)
+    col_name = MARKET_TO_ROLLING_COL.get(market)
+
     if col_name is None or col_name not in player_row.columns:
-        return None  # unknown market
-    
-    # Extract value
+        return None
+
     value = player_row.iloc[0][col_name]
     return value
 
+
 def get_last_5_stat(market, player_stats):
-    column_map = {
-        "Points": "pts",
-        "Rebounds": "tot_reb",
-        "Assists": "ast",
-        "Pts+Rebs+Asts": "pts_reb_ast",
-        "Steals": "stl",
-        "Blocks": "blk",
-        "3-PT Made": "three_pts_made",
-    }
-    
-    col_name = column_map.get(market)
+    col_name = MARKET_TO_LAST_5.get(market)
+
     if col_name is None or col_name not in player_stats.columns:
-        return None  # unknown market
+        return None
     
     return player_stats[["game_date", "matchup", col_name]].rename(
         columns={col_name: market}
@@ -74,7 +56,6 @@ def render_market_prop_list(market_df):
             image_path = images_folder / f"{player['player_id']}.png"
 
             with cols[c]:
-
                 if image_path.exists():
                     st.image(str(image_path))
                 else: st.image("placeholder_headshot.png")
@@ -95,6 +76,7 @@ def render_market_prop_list(market_df):
                     )
 
                 idx += 1
+
 
 def render_player_prop_list(player_prop_df):
     num_cols = 7
@@ -232,7 +214,7 @@ def render_player_props_page(all_props_df, roster_df, player_id, prop_market, ev
     image_path = Path("player_headshots") / f"{player_id}.png"
 
     st.subheader(f"{market} prop for next game on {game_date} at {game_time}", anchor="top")
-    col1, col2, col3, col4, col5, col6 = st.columns([1.5, 2, 1, 1, 1, 1])
+    col1, col2, col3, col4, col5, col6, col7 = st.columns([1.5, 1, 1, 1, 1, 1, 1])
     with col1:
         st.image(image_path, width='content') 
 
@@ -249,13 +231,22 @@ def render_player_props_page(all_props_df, roster_df, player_id, prop_market, ev
                  """, unsafe_allow_html=True)
     with col3:
         line = player_props["point"].iloc[0]
-        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Line</div>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: red; color: white;">Prop Line</div>', unsafe_allow_html=True)
         st.markdown(f'''
                     <div style="text-align: center;">
                     <span style="font-weight: bold; font-size: 40px;">{line}</span> {market}</div>
                      ''', unsafe_allow_html=True)
-
+        
     with col4:
+        line = player_props["point"].iloc[0]
+        prediction = load_player_prediction(player_id, market)
+        st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: yellow; color: black;">Prediction</div>', unsafe_allow_html=True)
+        st.markdown(f'''
+                    <div style="text-align: center;">
+                    <span style="font-weight: bold; font-size: 40px;">{prediction}</span> {market}</div>
+                     ''', unsafe_allow_html=True)
+
+    with col5:
         last_5_avg = get_rolling_avg_market(market, player_rolling_stats_row)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Last 5 Avg.</div>', unsafe_allow_html=True)
         st.markdown(f'''
@@ -263,19 +254,19 @@ def render_player_props_page(all_props_df, roster_df, player_id, prop_market, ev
                     <span style="font-weight: bold; font-size: 40px;">{last_5_avg}</span> {market}</div>
                     ''', unsafe_allow_html=True)
 
-    with col5:
+    with col6:
         over = player_props["Over"].iloc[0]
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Over</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{over}</div>', unsafe_allow_html=True)
    
-    with col6:
+    with col7:
         under = player_props["Under"].iloc[0]
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Under</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{under}</div>', unsafe_allow_html=True)
 
     last_5_stats = load_player_stats(player_id, "2025-26").head(5)
     last_5_market_stats = get_last_5_stat(market, last_5_stats)
-    prop_chart = render_prop_chart(last_5_market_stats, line, market)
+    prop_chart = render_prop_chart(last_5_market_stats, line, market, prediction)
     st.plotly_chart(prop_chart, width="content")
     
     render_more_props(st.session_state.selected_prop_player_id, all_props_df)

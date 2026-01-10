@@ -134,3 +134,15 @@ def get_rolling_avg_stats(player_id):
 
     return pd.read_sql(query, engine, params=(player_id,))
     
+
+def get_player_next_predictions(player_id):
+    query = """
+    SELECT *
+    FROM player_prediction_log
+    WHERE game_date >= CURRENT_DATE
+    AND player_id = %s
+    ORDER BY game_date
+    LIMIT 1;
+    """
+
+    return pd.read_sql(query, engine, params=(player_id,))

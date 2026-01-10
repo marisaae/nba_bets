@@ -10,6 +10,7 @@ from utils.data_load import load_team_schedule, load_team_roster, load_team_info
 from db.queries import get_next_game
 from utils.player_props import render_all_props_page, render_player_props_page
 from predictions.predict_models import predict_next_game, STAT_CONFIGS
+from datetime import date
 
 st.markdown("""
 <style>
@@ -141,16 +142,16 @@ with t4:
     #     st.session_state.stats_view = "list"
     #     st.session_state.selected_player_id = None
 
-    next_game = get_next_game(lal_team_id)
-#     next_game = {
-#   "event_id": "12a69f98068c9e1b277528c3f7dfed72",
-#   "game_date": datetime.date(2025, 12, 30),
-#   "game_status": "10:00am EST",
-#   "home_team_id": 1610612747,
-#   "away_team_id": 1610612745,
-#   "home_team_name": "Lakers",
-#   "away_team_name": "Heat"
-# }
+    # next_game = get_next_game(lal_team_id)
+    next_game = {
+  "event_id": "12a69f98068c9e1b277528c3f7dfed72",
+  "game_date": date(2025, 12, 30),
+  "game_status": "10:00am EST",
+  "home_team_id": 1610612747,
+  "away_team_id": 1610612745,
+  "home_team_name": "Lakers",
+  "away_team_name": "Heat"
+}
 
     if next_game is None:
         st.info("No upcoming games scheduled.")
@@ -191,4 +192,6 @@ with t5:
     predictions = pd.read_sql(query, engine)
     predictions_format = format_predictions(predictions)
 
+    game_date = predictions_format["game_date"].iloc[0]
+    st.subheader(f"Stat predictions for next game on {game_date}")
     st.dataframe(predictions_format, hide_index=True)
