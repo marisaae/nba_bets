@@ -62,10 +62,10 @@ def render_market_prop_list(market_df):
                 if st.button(
                     "View More Info",
                     use_container_width=True,
-                    key=f"props_{player['player_id']}_{player['market']}"
+                    key=f"props_{player_id}_{player['market']}"
                 ):
                     select_player_prop(
-                        player_id=player["player_id"],
+                        player_id=player_id,
                         market=player["market"]
                     )
 
