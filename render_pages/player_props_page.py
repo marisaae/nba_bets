@@ -140,16 +140,6 @@ def render_all_props_page(all_props_df):
 
 
     st.subheader(":violet[Points]", divider="yellow")
-        # 🔍 TEMP DEBUG — REMOVE AFTER
-    luka_debug = all_props_df[all_props_df["player_id"] == 1629029]
-    st.write("Luka raw rows:", luka_debug)
-
-    pts_df = all_props_df[all_props_df["market"] == "player_points"]
-    pts_df = consolidate_props(pts_df)
-
-    # 🔍 TEMP DEBUG — REMOVE AFTER
-    luka_after = pts_df[pts_df["player_id"] == 1629029]
-    st.write("Luka after consolidate:", luka_after)
 
     pts_df = all_props_df[all_props_df["market"] == "player_points"]
     pts_df = consolidate_props(pts_df)
