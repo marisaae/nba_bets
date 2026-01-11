@@ -83,7 +83,7 @@ def render_player_prop_list(player_prop_df):
             if idx >= player_prop_df.shape[0]:
                 break
             market_prop = player_prop_df.iloc[idx]
-            player_id = market_prop["player_id"]
+            player_id = int(market_prop["player_id"])
 
             with cols[c]:
                 market_name = format_prop_market(market_prop["market"])                
