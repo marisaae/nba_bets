@@ -83,6 +83,7 @@ def render_player_prop_list(player_prop_df):
             if idx >= player_prop_df.shape[0]:
                 break
             market_prop = player_prop_df.iloc[idx]
+            player_id = market_prop["player_id"]
 
             with cols[c]:
                 market_name = format_prop_market(market_prop["market"])                
@@ -94,10 +95,10 @@ def render_player_prop_list(player_prop_df):
                 if st.button(
                     "View More Info",
                     use_container_width=True,
-                    key=f"props_more_{market_prop['player_id']}_{market_prop['market']}"
+                    key=f"props_more_{player_id}_{market_prop['market']}"
                 ):
                     select_player_prop(
-                        player_id=market_prop["player_id"],
+                        player_id=player_id,
                         market=market_prop["market"]
                     )
 
@@ -139,6 +140,17 @@ def render_all_props_page(all_props_df):
 
 
     st.subheader(":violet[Points]", divider="yellow")
+        # 🔍 TEMP DEBUG — REMOVE AFTER
+    luka_debug = all_props_df[all_props_df["player_id"] == 1629028]
+    st.write("Luka raw rows:", luka_debug)
+
+    pts_df = all_props_df[all_props_df["market"] == "player_points"]
+    pts_df = consolidate_props(pts_df)
+
+    # 🔍 TEMP DEBUG — REMOVE AFTER
+    luka_after = pts_df[pts_df["player_id"] == 1629028]
+    st.write("Luka after consolidate:", luka_after)
+    
     pts_df = all_props_df[all_props_df["market"] == "player_points"]
     pts_df = consolidate_props(pts_df)
     pts_df = pts_df.sort_values("full_name")
