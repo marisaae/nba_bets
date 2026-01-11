@@ -5,7 +5,6 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, r2_score
 import os
 from dotenv import load_dotenv
-from tabulate import tabulate
 import datetime
 import joblib
 

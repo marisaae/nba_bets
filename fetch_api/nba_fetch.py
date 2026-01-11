@@ -1,7 +1,6 @@
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import teaminfocommon, commonteamroster, scheduleleaguev2, playergamelog, leaguedashteamstats
 from nba_headshot_downloader import headshots
-from tabulate import tabulate
 import pandas as pd
 import time
 import random
@@ -71,7 +70,7 @@ def fetch_team_info(team_id, cur):
 def fetch_team_roster(team_id, cur):
     roster = commonteamroster.CommonTeamRoster(team_id=team_id)
     roster_df = roster.get_data_frames()[0]
-    # print(tabulate(roster_df, headers='keys', tablefmt='psql'))
+
     rows_to_insert = []
     current_player_ids = []
     if not roster_df.empty:

@@ -1,6 +1,5 @@
 import pandas as pd
 import joblib
-from tabulate import tabulate
 from pathlib import Path
 
 
