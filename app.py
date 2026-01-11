@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 from fetch_api.nba_fetch import fetch_all_teams
-from pages.player_stats_page import render_player_list, render_player_page
-from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason, format_predictions
+from render_pages.player_stats_page import render_player_list, render_player_page
+from render_pages.player_props_page import render_all_props_page, render_player_props_page
+from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason
 from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props
 from db.queries import get_next_game
-from pages.player_props_page import render_all_props_page, render_player_props_page
 from pathlib import Path
 from datetime import date
 
