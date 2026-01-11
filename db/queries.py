@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
 load_dotenv()
-
-engine = create_engine(os.getenv("SQLALCHEMY_URL"))
+dsn = os.getenv("SQLALCHEMY_URL")
+engine = create_engine(dsn, connect_args={"options": "-c client_encoding=UTF8"},)
 
 def get_team_info(team_id):
     query = """

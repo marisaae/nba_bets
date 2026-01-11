@@ -45,7 +45,8 @@ def render_market_prop_list(market_df):
             if idx >= market_df.shape[0]:
                 break
             player = market_df.iloc[idx]
-            player_image = images_folder / f"{player['player_id']}.png"
+            player_id = int(player['player_id'])
+            player_image = images_folder / f"{player_id}.png"
 
             with cols[c]:
                 if player_image.exists():

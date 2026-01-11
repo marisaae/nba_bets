@@ -17,7 +17,7 @@ def save_models(models, folder="models"):
 
 load_dotenv()
 dsn = os.getenv("SQLALCHEMY_URL")
-engine = create_engine(dsn)
+engine = create_engine(dsn, connect_args={"options": "-c client_encoding=UTF8"},)
 
 query_model = "SELECT * FROM model_player_stats WHERE game_date <= DATE '2026-01-05';"
 query_def = "SELECT * FROM team_def_stats;"
