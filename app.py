@@ -1,15 +1,12 @@
 import streamlit as st
 import pandas as pd
-import os
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
 from fetch_api.nba_fetch import fetch_all_teams
-from utils.player_stats import render_player_list, render_player_page
+from pages.player_stats_page import render_player_list, render_player_page
 from utils.data_format import format_schedule, highlight_lakers_score, highlight_preseason, format_predictions
 from utils.data_load import load_team_schedule, load_team_roster, load_team_info, load_all_player_props
 from db.queries import get_next_game
-from utils.player_props import render_all_props_page, render_player_props_page
-from predictions.predict_models import predict_next_game, STAT_CONFIGS
+from pages.player_props_page import render_all_props_page, render_player_props_page
+from pathlib import Path
 from datetime import date
 
 st.markdown("""
@@ -45,13 +42,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize session state
-# Stats tab
+
 if "stats_view" not in st.session_state:
     st.session_state.stats_view = "list"
 if "selected_player_id" not in st.session_state:
     st.session_state.selected_player_id = None
 
-# Props tab
 if "props_view" not in st.session_state:
     st.session_state.props_view = "list"
 if "selected_prop_player_id" not in st.session_state:
@@ -67,7 +63,6 @@ lal_team_abbrev = "LAL"
 lal_team_id = all_teams.loc[all_teams['abbreviation'] == lal_team_abbrev, 'id'].iloc[0]
 st.set_page_config(page_title="NBA Player Props", layout="wide")
 
-
 team_df = load_team_info(lal_team_id)
 
 standing = team_df["standing"].iloc[0].astype(str)
@@ -75,7 +70,8 @@ record = team_df["record"].iloc[0]
 
 col1, col2 = st.columns([.5, 3])
 with col1:
-    st.image("lakers_logo.png", width=200) 
+    img_path = Path("misc_imgs") / "lakers_logo.png"
+    st.image(img_path, width=200)
 
 with col2:
     st.header("Los Angeles Lakers", anchor="home")
@@ -86,10 +82,11 @@ with col2:
 schedule_df = load_team_schedule(lal_team_id)
 schedule_df = format_schedule(schedule_df, lal_team_id, "Lakers")
 styled_schedule_df = schedule_df.style.apply(highlight_lakers_score, axis=1).apply(highlight_preseason, axis=1)
+
 roster_df = load_team_roster(lal_team_id)
 
 
-t1, t2, t3, t4, t5 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props", "Player Predictions"])
+t1, t2, t3, t4 = st.tabs(["Schedule", "Roster", "Player Stats", "Player Props"])
 
 with t1:
     if not schedule_df.empty:
@@ -169,7 +166,7 @@ with t4:
         else:
             st.header(f"Props for next game on {next_game_date} at {next_game_time}")
             render_all_props_page(all_props)
-            # need to add info for this - what does this function take in as parameters?
+
     elif st.session_state.props_view == "player":
         render_player_props_page(all_props, roster_df,
             st.session_state.selected_prop_player_id,
@@ -177,21 +174,21 @@ with t4:
             st.session_state.props_event_id
         )
 
-with t5:
-    load_dotenv()
-    dsn = os.getenv("SQLALCHEMY_URL")
-    engine = create_engine(dsn)
+# with t5:
+#     load_dotenv()
+#     dsn = os.getenv("SQLALCHEMY_URL")
+#     engine = create_engine(dsn)
 
-    query = """
-    SELECT *
-    FROM player_prediction_log
-    WHERE game_date >= CURRENT_DATE
-    ORDER BY game_date, player_name
-    """
+#     query = """
+#     SELECT *
+#     FROM player_prediction_log
+#     WHERE game_date >= CURRENT_DATE
+#     ORDER BY game_date, player_name
+#     """
 
-    predictions = pd.read_sql(query, engine)
-    predictions_format = format_predictions(predictions)
+#     predictions = pd.read_sql(query, engine)
+#     predictions_format = format_predictions(predictions)
 
-    game_date = predictions_format["game_date"].iloc[0]
-    st.subheader(f"Stat predictions for next game on {game_date}")
-    st.dataframe(predictions_format, hide_index=True)
+#     game_date = predictions_format["game_date"].iloc[0]
+#     st.subheader(f"Stat predictions for next game on {game_date}")
+#     st.dataframe(predictions_format, hide_index=True)

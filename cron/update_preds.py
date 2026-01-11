@@ -1,10 +1,10 @@
-from predictions.predict_models import predict_next_game, log_prediction, STAT_CONFIGS
-from datetime import date
 import os
-from sqlalchemy import create_engine
 import pandas as pd
-from db.connection import get_connection
+from datetime import date
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from predictions.predict_models import predict_next_game, log_prediction, STAT_CONFIGS
+from db.connection import get_connection
 
 load_dotenv()
 

@@ -1,16 +1,43 @@
 import plotly.graph_objects as go
 import pandas as pd
+from utils.data_load import load_player_stats
+from utils.market_mappings import MARKET_TO_LAST_5
+import streamlit as st
 
-def render_prop_chart(last_5_stats, prop_line, market, prediction):
-    max_range = last_5_stats[market].max()
+def get_last_5_stat(market, player_stats):
+    col_name = MARKET_TO_LAST_5.get(market)
+
+    if col_name is None or col_name not in player_stats.columns:
+        return None
+    
+    return player_stats[["game_date", "matchup", col_name]].rename(
+        columns={col_name: market}
+    )
+
+def render_prop_chart(player_id, prop_line, market, prediction):
+    last_5_stats = load_player_stats(player_id, "2025-26").head(5)
+    last_5_market_stats = get_last_5_stat(market, last_5_stats)
+
+    max = last_5_market_stats[market].max()
+    max_range = max + 1 if max >= prop_line else prop_line + 1
 
     diff = abs(prediction - prop_line)
-    offset = 6 if diff < .5 else 0
+    offset = 6
+    if diff < .5:
+        if prop_line > prediction:
+            prop_yshift = offset
+            pred_yshift = -offset
+        else:
+            prop_yshift = -offset
+            pred_yshift = offset
+    else:
+        prop_yshift = 0
+        pred_yshift = 0
 
-    stats = last_5_stats[market]
+    stats = last_5_market_stats[market]
     avg_stat = stats.mean().round(1)
-    opp = last_5_stats["matchup"].str.split().str[-1]
-    dates = pd.to_datetime(last_5_stats["game_date"]).dt.strftime("%m/%d")
+    opp = last_5_market_stats["matchup"].str.split().str[-1]
+    dates = pd.to_datetime(last_5_market_stats["game_date"]).dt.strftime("%m/%d")
 
     x_labels = [f"<b>{o}</b><br>{d}" for o, d in zip(opp, dates)]
 
@@ -33,7 +60,7 @@ def render_prop_chart(last_5_stats, prop_line, market, prediction):
             ])
     
     fig.update_xaxes(title_text=f"<b>{avg_stat}</b> avg last 5",title_font_color="black", title_font_size=18,autorange="reversed", linecolor='black', linewidth=1, tickfont=dict(size=14))
-    fig.update_yaxes(title_text=f"{market}", title_font_color="black", linecolor='black', linewidth=1, range=[0, max_range + 5])
+    fig.update_yaxes(title_text=f"{market}", title_font_color="black", linecolor='black', linewidth=1, range=[0, max_range])
 
     fig.add_hline(
         y=prop_line,
@@ -51,8 +78,8 @@ def render_prop_chart(last_5_stats, prop_line, market, prediction):
         showarrow=False,
         xanchor="left",
         yanchor="middle",
+        yshift=prop_yshift,
         xshift=50,
-        yshift=offset,
         font=dict(size=14, color="black"),
         bgcolor="white"
     )
@@ -72,7 +99,7 @@ def render_prop_chart(last_5_stats, prop_line, market, prediction):
         xanchor="left",
         yanchor="middle",
         xshift=50,
-        yshift=-(offset),
+        yshift=pred_yshift,
         font=dict(size=14, color="black"),
         bgcolor="white"
     )

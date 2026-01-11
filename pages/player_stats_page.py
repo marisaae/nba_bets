@@ -1,5 +1,6 @@
 import streamlit as st
 from pathlib import Path
+import math
 from utils.data_load import load_player_stats
 from utils.charts.pts_chart import render_pts_chart, render_pts_trend_chart
 from utils.charts.shooting_chart import render_shooting_trend_chart
@@ -20,27 +21,25 @@ def go_back_to_stats_list():
 def render_player_list(roster_df):
     
     roster_df_sorted = roster_df.sort_values(by="full_name")
-    images_folder = Path("player_headshots") 
+    images_folder = Path("player_headshots")
+    placeholder_image = images_folder / "placeholder.png" 
 
     num_cols = 5
-    rows = roster_df_sorted.shape[0] // num_cols + 1
     idx = 0
-
-    st.subheader("Click a player to view their stats")
-
+    rows = math.ceil(roster_df_sorted.shape[0] / num_cols)
     for r in range(rows):
         cols = st.columns(num_cols)
         for c in range(num_cols):
             if idx >= roster_df_sorted.shape[0]:
                 break
             player = roster_df_sorted.iloc[idx]
-            image_path = images_folder / f"{player['player_id']}.png"
+            player_image = images_folder / f"{player['player_id']}.png"
 
             with cols[c]:
-
-                if image_path.exists():
-                    st.image(str(image_path))
-                else: st.image("placeholder_headshot.png")
+                if player_image.exists():
+                    st.image(str(player_image))
+                else:
+                    st.image(str(placeholder_image))
                 
                 st.markdown(
                     f"<div class='player-name'>{player['full_name']}</div>",
@@ -161,5 +160,5 @@ def render_player_page(roster_df, player_id):
     st.subheader(":violet[Playmaking]", divider="yellow")
     playmaking_chart = render_playmaking_chart(player_stats, player_id)
     st.plotly_chart(playmaking_chart, width='stretch')
-    st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)
     
+    st.markdown('<a class="nav-link" href="#home">Back to Top</a>', unsafe_allow_html=True)

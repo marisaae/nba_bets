@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
+import math
 from pathlib import Path
 from utils.data_format import consolidate_props, format_prop_market
-from utils.data_load import load_rolling_avg_stats, load_player_stats, load_player_prediction
+from utils.data_load import load_rolling_avg_stats, load_player_prediction
 from utils.charts.props_chart import render_prop_chart
-from utils.market_mappings import MARKET_TO_ROLLING_COL, MARKET_TO_LAST_5
+from utils.market_mappings import MARKET_TO_ROLLING_COL
 
 
 def select_player_prop(player_id, market):
@@ -27,38 +28,30 @@ def get_rolling_avg_market(market, player_row):
         return None
 
     value = player_row.iloc[0][col_name]
+
     return value
 
 
-def get_last_5_stat(market, player_stats):
-    col_name = MARKET_TO_LAST_5.get(market)
-
-    if col_name is None or col_name not in player_stats.columns:
-        return None
-    
-    return player_stats[["game_date", "matchup", col_name]].rename(
-        columns={col_name: market}
-    )
-
-
 def render_market_prop_list(market_df):
-    images_folder = Path("player_headshots") 
+    images_folder = Path("player_headshots")
+    placeholder_image = images_folder / "placeholder.png" 
 
     num_cols = 7
     idx = 0
-    rows = market_df.shape[0] // num_cols + 1
+    rows = math.ceil(market_df.shape[0] / num_cols)
     for r in range(rows):
         cols = st.columns(num_cols)
         for c in range(num_cols):
             if idx >= market_df.shape[0]:
                 break
             player = market_df.iloc[idx]
-            image_path = images_folder / f"{player['player_id']}.png"
+            player_image = images_folder / f"{player['player_id']}.png"
 
             with cols[c]:
-                if image_path.exists():
-                    st.image(str(image_path))
-                else: st.image("placeholder_headshot.png")
+                if player_image.exists():
+                    st.image(str(player_image))
+                else:
+                    st.image(str(placeholder_image))
                 
                 st.markdown(
                     f"<div class='player-name'>{player['full_name']}</div><p class='prop-info'><b><span style='color:red;''>Line: {player['point']}</span></b><br> Over: {player['Over']}<br> Under: {player['Under']}</p>",
@@ -264,9 +257,8 @@ def render_player_props_page(all_props_df, roster_df, player_id, prop_market, ev
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">Under</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{under}</div>', unsafe_allow_html=True)
 
-    last_5_stats = load_player_stats(player_id, "2025-26").head(5)
-    last_5_market_stats = get_last_5_stat(market, last_5_stats)
-    prop_chart = render_prop_chart(last_5_market_stats, line, market, prediction)
+
+    prop_chart = render_prop_chart(player_id, line, market, prediction)
     st.plotly_chart(prop_chart, width="content")
     
     render_more_props(st.session_state.selected_prop_player_id, all_props_df)

@@ -22,6 +22,8 @@ def normalize_name(name):
 
 def cleanup_old_headshots(current_player_ids, folder="player_headshots"):
     for filename in os.listdir(folder):
+        if filename == "placeholder.png":
+            continue
         if filename.endswith(".png"):
             player_id = int(filename.replace(".png", ""))
             if player_id not in current_player_ids:
