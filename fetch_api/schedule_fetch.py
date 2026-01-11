@@ -35,7 +35,6 @@ def run_all():
         filepath = os.path.join("player_headshots", filename)
 
         if os.path.exists(filepath):
-            print(f"{filename} already exists, skipping...")
             continue
 
         fetch_player_headshot(player_id)

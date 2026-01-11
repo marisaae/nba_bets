@@ -122,8 +122,10 @@ def fetch_odds(roster_df):
                         WHERE game_date = %s AND home_team_name = %s AND away_team_name = %s;
                     """, (event_id, game_date, home_team, away_team))
 
-                    if cur.rowcount == 0:
-                        print(f"No matching schedule row for event {event_id} ({home_team} vs {away_team} on {game_date})")
+                    updated = cur.fetchone()
+
+                    if updated is None:
+                        print(f"No matching schedule row for event {event_id} - ({home_team} vs {away_team} on {game_date})")
                     else:
                         print(f"Event {event_id} inserted into schedule.")
 

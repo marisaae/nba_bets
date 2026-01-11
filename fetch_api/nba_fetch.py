@@ -25,10 +25,8 @@ def fetch_player_headshot(player_id):
     filename = f"{player_id}.png"
     filepath = os.path.join(folder, filename)
 
-    # Attempt to fetch the headshot
     headshots.getHeadshotById(player_id, folder)
 
-    # Check if the file was actually saved
     if os.path.exists(filepath):
         print(f"Headshot saved for player ID: {player_id}")
     else:
