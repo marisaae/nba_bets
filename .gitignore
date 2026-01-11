@@ -1,4 +1,4 @@
 .env
 test_fetch.py
-*.txt
+log.txt
 *.bat
