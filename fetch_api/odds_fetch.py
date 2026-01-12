@@ -46,6 +46,10 @@ def fetch_odds(roster_df):
             home_team = event['home_team'].split(" ")[-1]
             away_team = event['away_team'].split(" ")[-1]
 
+            print("debug")
+            print(game_date, home_team, away_team)
+            print("end debug")
+
             # fetch overall odds data for game
             event_odds_path = f"/v4/sports/{sport}/events/{event_id}/odds?apiKey={api_key}&regions={region}&markets={game_markets}&oddsFormat={odds_format}&bookmakers={bookmakers}"
             event_odds = get_json(event_odds_path)
