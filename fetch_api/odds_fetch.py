@@ -46,14 +46,10 @@ def fetch_odds(roster_df):
             home_team = event['home_team'].split(" ")[-1]
             away_team = event['away_team'].split(" ")[-1]
 
-            print("debug")
-            print(game_date, home_team, away_team)
-            print("end debug")
-
             # fetch overall odds data for game
             event_odds_path = f"/v4/sports/{sport}/events/{event_id}/odds?apiKey={api_key}&regions={region}&markets={game_markets}&oddsFormat={odds_format}&bookmakers={bookmakers}"
             event_odds = get_json(event_odds_path)
-            
+
             if event_odds is None:
                 print(f"No odds data for event {event_id}")
                 continue
@@ -91,6 +87,7 @@ def fetch_odds(roster_df):
                 continue
             
             player_bookmakers_list = event_player_odds.get('bookmakers', [])
+
             if len(player_bookmakers_list) == 0:
                 print(f"DraftKings odds not available for event {event_id}")
                 continue
@@ -123,7 +120,9 @@ def fetch_odds(roster_df):
                     cur.execute("""
                         UPDATE schedule
                         SET event_id = %s
-                        WHERE game_date = %s AND home_team_name = %s AND away_team_name = %s;
+                        WHERE game_date = %s
+                        AND home_team_name = %s
+                        AND away_team_name = %s;
                     """, (event_id, game_date, home_team, away_team))
 
                     updated = cur.fetchone()
