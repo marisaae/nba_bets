@@ -111,8 +111,7 @@ def get_next_game(team_id):
     FROM schedule
     WHERE (home_team_id = %s OR away_team_id = %s)
     AND game_date >= (
-    CURRENT_DATE AT TIME ZONE 'UTC'
-    AT TIME ZONE 'America/New_York'
+    CURRENT_DATE AT TIME ZONE 'America/New_York'
     )::date
     AND game_status != 'Final'
     ORDER BY game_date ASC
