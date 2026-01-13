@@ -147,7 +147,8 @@ def fetch_odds(roster_df):
                             price = EXCLUDED.price,
                             point = EXCLUDED.point,
                             last_odds_update = EXCLUDED.last_odds_update,
-                            last_updated = NOW();
+                            last_updated = NOW()
+                        WHERE EXCLUDED.last_odds_update > player_odds_raw.last_odds_update;
                         """
                     cur.executemany(player_odds_query, player_odds_rows_to_insert)
                     

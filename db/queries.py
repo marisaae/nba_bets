@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 dsn = os.getenv("SQLALCHEMY_URL")
-engine = create_engine(dsn, connect_args={"options": "-c client_encoding=UTF8"},)
+engine = create_engine(dsn)
 
 def get_team_info(team_id):
     query = """
@@ -141,7 +141,9 @@ def get_player_next_predictions(player_id):
     query = """
     SELECT *
     FROM player_prediction_log
-    WHERE game_date >= CURRENT_DATE
+    WHERE game_date >= (
+    CURRENT_DATE AT TIME ZONE 'America/New_York'
+    )::date
     AND player_id = %s
     ORDER BY game_date
     LIMIT 1;

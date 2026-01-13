@@ -10,7 +10,7 @@ load_dotenv()
 
 def run_predictions():
     dsn = os.getenv("SQLALCHEMY_URL")
-    engine = create_engine(dsn, connect_args={"options": "-c client_encoding=UTF8"},)
+    engine = create_engine(dsn)
     today = date.today()
 
     query = "SELECT * FROM future_games;"
