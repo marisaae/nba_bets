@@ -1,4 +1,5 @@
 # NBA Player Performance Analytics & Prediction Platform
+[Live App Link](https://nba-bets-mm7o.onrender.com) – View the interactive dashboard
 
 ## Overview
 An end-to-end data analytics application that aggregates historical and live player performance data from multiple external APIs to analyze metrics, visualize trends, and generate predictive estimates for future performance compared to their prop lines.
