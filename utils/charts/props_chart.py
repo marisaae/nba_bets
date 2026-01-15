@@ -35,7 +35,7 @@ def render_prop_chart(player_id, prop_line, market, prediction):
         pred_yshift = 0
 
     stats = last_5_market_stats[market]
-    avg_stat = stats.mean().round(1)
+    avg_stat = round(stats.mean(),1)
     opp = last_5_market_stats["matchup"].str.split().str[-1]
     dates = pd.to_datetime(last_5_market_stats["game_date"]).dt.strftime("%m/%d")
 

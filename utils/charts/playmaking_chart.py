@@ -9,9 +9,9 @@ def render_playmaking_chart(player_stats_df, player_id):
     min_ast = player_data["ast"].min()
     max_ast = player_data["ast"].max()
     home_ast = player_data[player_data["matchup"].str.contains(" vs. ")]["ast"]
-    home_ast_avg = home_ast.mean().round(1)
+    home_ast_avg = round(home_ast.mean(), 1)
     away_ast = player_data[player_data["matchup"].str.contains(" @ ")]["ast"]
-    away_ast_avg = away_ast.mean().round(1)
+    away_ast_avg = round(away_ast.mean(), 1)
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Assists per Last 10 Games", "Season Assists Home vs Away"))
 

@@ -71,7 +71,6 @@ def render_player_page(roster_df, player_id):
             st.image(player_image, width='content')
         else:
             st.image(placeholder_image, width='content')
-            # st.info("No stats available for this player yet.")
 
     with col2:
         st.header(player["full_name"], anchor="player-overview")
@@ -89,21 +88,29 @@ def render_player_page(roster_df, player_id):
         ppg = calc_ppg(player_stats)
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">PPG</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{ppg}</div>', unsafe_allow_html=True)
+        if ppg is None:
+            st.markdown('<div style="text-align: center; font-weight: bold; font-size: 20px; color: red;">N/A</div>', unsafe_allow_html=True)
     
     with col4:
         apg = calc_apg(player_stats)
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">APG</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{apg}</div>', unsafe_allow_html=True)
+        if apg is None:
+            st.markdown('<div style="text-align: center; font-weight: bold; font-size: 20px; color: red;">N/A</div>', unsafe_allow_html=True)
 
     with col5:
         three_pct = calc_3ppct(player_stats)
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">3P%</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{three_pct}</div>', unsafe_allow_html=True)
+        if three_pct is None:
+            st.markdown('<div style="text-align: center; font-weight: bold; font-size: 20px; color: red;">N/A</div>', unsafe_allow_html=True)
 
     with col6:
         fg_pct = calc_fgpct(player_stats)
         st.markdown('<div style="text-align: center; font-weight: bold; font-size: 16px; background-color: purple; color: white;">FG%</div>', unsafe_allow_html=True)
         st.markdown(f'<div style="text-align: center; font-weight: bold; font-size: 40px;">{fg_pct}</div>', unsafe_allow_html=True)
+        if fg_pct is None:
+            st.markdown('<div style="text-align: center; font-weight: bold; font-size: 20px; color: red;">N/A</div>', unsafe_allow_html=True)
 
     left, middle, right = st.columns(3)
     with left:
@@ -116,6 +123,9 @@ def render_player_page(roster_df, player_id):
         st.markdown('<a style="display:block;" class="nav-link" href="#playmaking">Jump to Playmaking</a>', unsafe_allow_html=True)
 
     st.subheader(":violet[Season Stats]", divider="yellow")
+
+    if player_stats.empty:
+        st.info("No stats available for this player yet.")
 
     st.dataframe(player_stats, 
                 column_config={

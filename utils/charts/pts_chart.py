@@ -1,17 +1,22 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.calculations import calc_mid, calc_ppg
+import streamlit as st
 
 def render_pts_chart(player_stats_df, player_id):
+    if player_stats_df.empty:
+        st.info("No stats available for this player yet.")
+        return None
+
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
     avg_points = calc_ppg(player_data)
     min_pts = player_data["pts"].min()
     max_pts = player_data["pts"].max()
     home_pts = player_data[player_data["matchup"].str.contains(" vs. ")]["pts"]
-    home_pts_avg = home_pts.mean().round(1)
+    home_pts_avg = round(home_pts.mean(), 1)
     home_game_dates = player_data[player_data["matchup"].str.contains(" vs. ")]["game_date"].head(10)
     away_pts = player_data[player_data["matchup"].str.contains(" @ ")]["pts"]
-    away_pts_avg = away_pts.mean().round(1)
+    away_pts_avg = round(away_pts.mean(), 1)
     away_game_dates = player_data[player_data["matchup"].str.contains(" @ ")]["game_date"].head(10)
 
     fig = make_subplots(rows=2, cols=2,
@@ -78,6 +83,9 @@ def render_pts_chart(player_stats_df, player_id):
 
 
 def render_pts_trend_chart(player_stats_df, player_id):
+    if player_stats_df.empty:
+        st.info("No stats available for this player yet.")
+        return None
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
     avg_points = calc_ppg(player_data)
     
@@ -85,8 +93,8 @@ def render_pts_trend_chart(player_stats_df, player_id):
     first_half = player_data.iloc[:mid]
     second_half = player_data.iloc[mid:]
 
-    avg_first_half = first_half["pts"].mean().round(1)
-    avg_second_half = second_half["pts"].mean().round(1)
+    avg_first_half = round(first_half["pts"].mean(), 1)
+    avg_second_half = round(second_half["pts"].mean(), 1)
 
     fig = go.Figure()
 
