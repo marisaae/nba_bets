@@ -29,6 +29,7 @@ def calc_3ppct(player_stats_df):
         return 0
     return round((three_made / three_att) * 100, 1)
 
+
 def calc_mid(player_stats_df):
     game_count = player_stats_df.shape[0]
     mid = game_count // 2

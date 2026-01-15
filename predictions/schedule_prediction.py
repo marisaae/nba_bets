@@ -18,7 +18,7 @@ def run_predictions():
     future_game_df = pd.read_sql(query, engine)
     future_game_df = future_game_df.fillna(0)
     prediction_df = predict_next_game(STAT_CONFIGS, future_game_df)
-    print("successfully predicted next games")
+
     with get_connection() as conn:
         with conn.cursor() as cur:
             log_prediction(prediction_df, cur)

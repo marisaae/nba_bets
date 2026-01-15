@@ -2,7 +2,6 @@ import plotly.graph_objects as go
 import pandas as pd
 from utils.data_load import load_player_stats
 from utils.market_mappings import MARKET_TO_LAST_5
-import streamlit as st
 
 def get_last_5_stat(market, player_stats):
     col_name = MARKET_TO_LAST_5.get(market)

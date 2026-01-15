@@ -8,6 +8,7 @@ MARKET_TO_PRED_COL = {
     "3-PT Made": "pred_three"
 }
 
+
 MARKET_TO_ROLLING_COL = {
     "Points": "pts_rolling_avg_over_5",
     "Rebounds": "reb_rolling_avg_over_5",
@@ -17,6 +18,7 @@ MARKET_TO_ROLLING_COL = {
     "Blocks": "blk_rolling_avg_over_5",
     "3-PT Made": "threes_rolling_avg_over_5"
 }
+
 
 MARKET_TO_LAST_5 = {
     "Points": "pts",

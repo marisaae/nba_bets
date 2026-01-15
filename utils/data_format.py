@@ -87,6 +87,7 @@ def consolidate_props(df):
 
     return pivot_df
 
+
 def format_prop_market(market: str) -> str:
     CUSTOM_MARKET_NAMES = {
         "player_points_rebounds_assists": "Pts+Rebs+Asts",
@@ -100,7 +101,6 @@ def format_prop_market(market: str) -> str:
         market = market.replace("player_", "")
 
     return market.title()
-    # return market.replace("_", " ").title()
 
 
 def round_predictions(num):

@@ -1,8 +1,13 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.calculations import calc_3ppct, calc_mid, calc_fgpct
+import streamlit as st
 
 def render_shooting_trend_chart(player_stats_df, player_id):
+    if player_stats_df.empty:
+        st.info("No stats available for this player yet.")
+        return None
+    
     player_data = player_stats_df[player_stats_df["player_id"] == player_id]
     avg_3p_pct = calc_3ppct(player_data) / 100
     avg_fg_pct = calc_fgpct(player_data) / 100

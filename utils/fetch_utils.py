@@ -14,11 +14,13 @@ def get_json(path):
         print(url)
         return None
     
+    
 def normalize_name(name):
     name = unicodedata.normalize("NFKD", name)
     name = "".join(c for c in name if not unicodedata.combining(c))
     name = name.lower()
     return name
+
 
 def cleanup_old_headshots(current_player_ids, folder="player_headshots"):
     for filename in os.listdir(folder):

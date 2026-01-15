@@ -76,7 +76,7 @@ def render_player_prop_list(player_prop_df):
     num_cols = 7
     idx = 0
     rows = player_prop_df.shape[0] // num_cols + 1
-    # loop through player_prop df to print each prop in a column
+
     for r in range(rows):
         cols = st.columns(num_cols)
         for c in range(num_cols):

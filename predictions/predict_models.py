@@ -3,7 +3,6 @@ import joblib
 from pathlib import Path
 
 
-
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODEL_DIR = BASE_DIR / "models"
 
@@ -74,17 +73,15 @@ def predict_next_game(STAT_CONFIGS, future_game_df):
     models = load_models()
 
     df = future_game_df.copy()
-
     for stat, cfg in STAT_CONFIGS.items():
-        df[f"predicted_{stat}"] = models[stat].predict(
-            df[cfg["features"]]
-        )
-    # output_path = BASE_DIR / "outputs" / "predictions_preview.csv"
-    # output_path.parent.mkdir(exist_ok=True)
-
-    # df.to_csv(output_path, index=False)
-    # print(f"Saved to {output_path}")
-
+        try:
+            df[f"predicted_{stat}"] = models[stat].predict(
+                df[cfg["features"]]
+            )
+        except Exception as e:
+            print(f"Prediction failed for {stat}: {e}")
+            df[f"predicted_{stat}"] = None
+            
     return df
 
 
@@ -138,6 +135,9 @@ def log_prediction(prediction_df, cur):
             pred_three = EXCLUDED.pred_three,
             last_updated = NOW();
         """
-    cur.executemany(query, rows_to_insert)
+    try:
+        cur.executemany(query, rows_to_insert)
+        print("Successfully logged player predictions.")
 
-    print("Successfully logged player predictions.")
+    except Exception as e:
+        print("Error logging player predictions:", e)

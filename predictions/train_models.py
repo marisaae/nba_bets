@@ -20,28 +20,15 @@ dsn = os.getenv("SQLALCHEMY_URL")
 engine = create_engine(dsn)
 
 query_model = "SELECT * FROM model_player_stats WHERE game_date <= DATE '2026-01-05';"
-query_def = "SELECT * FROM team_def_stats;"
 
 model_stats_df = pd.read_sql(query_model, engine)
-def_stats_df = pd.read_sql(query_def, engine)
 
-model_stats_df["primary_position"] = model_stats_df["position"].str.split("-").str[0]
-model_stats_df = model_stats_df.drop(columns=["position"])
+model_stats_df['game_date'] = pd.to_datetime(model_stats_df['game_date'])
 
-merged_model_stats = model_stats_df.merge(
-    def_stats_df,
-    left_on=["opp_team_id", "primary_position", "season"],
-    right_on=["team_id", "opp_player_position", "season"],
-    how="left"
-)
-
-merged_model_stats = merged_model_stats.drop(columns=["opp_team_id", "team_id", "team_name", "gp", "opp_player_position", "last_updated"])
-merged_model_stats = merged_model_stats.rename(columns={"win_pct": "opp_wins_pct"})
-merged_model_stats['game_date'] = pd.to_datetime(merged_model_stats['game_date'])
-
-merged_model_stats = merged_model_stats.fillna(0)
+model_stats_df = model_stats_df.fillna(0)
 
 cutoff = datetime.date(2025, 1, 1)
+
 STAT_CONFIGS = {
     "points": {
         "target": "pts",
@@ -93,8 +80,8 @@ STAT_CONFIGS = {
     }
 }
 def train_models(cutoff, STAT_CONFIGS):
-    train_df = merged_model_stats[merged_model_stats["game_date"].dt.date <= cutoff]
-    test_df = merged_model_stats[merged_model_stats["game_date"].dt.date > cutoff]
+    train_df = model_stats_df[model_stats_df["game_date"].dt.date <= cutoff]
+    test_df = model_stats_df[model_stats_df["game_date"].dt.date > cutoff]
 
     models = {}
     metrics = {}
@@ -141,7 +128,7 @@ def train_models(cutoff, STAT_CONFIGS):
 
     # print(results.head(50))
 
-    model.fit(merged_model_stats[cfg["features"]], merged_model_stats[cfg["target"]])
+    model.fit(model_stats_df[cfg["features"]], model_stats_df[cfg["target"]])
     
     models[stat] = model
 

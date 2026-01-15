@@ -40,7 +40,6 @@ def fetch_team_info(team_id, cur):
         print("No team data found.")
         return
 
-    # extract values
     team_name = team_df.loc[0, 'TEAM_NAME']
     team_curr_season = team_df.loc[0, 'SEASON_YEAR']
     team_abbreviation = team_df.loc[0, 'TEAM_ABBREVIATION']
@@ -51,7 +50,6 @@ def fetch_team_info(team_id, cur):
     team_losses = team_df.loc[0, 'L']
     team_conf_rank = team_df.loc[0, 'CONF_RANK']
 
-    # insert or update team info in the database
     query = """
         INSERT INTO team_info
         (id, curr_season, team_name, abbreviation, location, conference, record, total_win, total_loss, standing)

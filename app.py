@@ -135,10 +135,6 @@ with t3:
         render_player_page(roster_df, st.session_state.selected_player_id)
 
 with t4:
-    # if st.session_state.stats_view != "list":
-    #     st.session_state.stats_view = "list"
-    #     st.session_state.selected_player_id = None
-
     next_game = get_next_game(lal_team_id)
 #     next_game = {
 #   "event_id": "12a69f98068c9e1b277528c3f7dfed72",

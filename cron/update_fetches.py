@@ -3,7 +3,7 @@ import os
 import time
 import random
 from db.connection import get_connection
-from fetch_api.nba_fetch import (fetch_all_teams, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs, fetch_team_def_stats, fetch_player_headshot)
+from fetch_api.nba_fetch import fetch_all_teams, fetch_team_info, fetch_team_roster, fetch_team_schedule, fetch_player_game_logs, fetch_team_def_stats, fetch_player_headshot
 from fetch_api.odds_fetch import fetch_odds
 from utils.fetch_utils import cleanup_old_headshots
 
