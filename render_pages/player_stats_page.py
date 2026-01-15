@@ -58,14 +58,20 @@ def render_player_list(roster_df):
 
 def render_player_page(roster_df, player_id):
     player = roster_df.loc[roster_df['player_id'] == player_id].iloc[0]
-    image_path = Path("player_headshots") / f"{player_id}.png"
+    images_folder = Path("player_headshots")
+    player_image = images_folder / f"{player_id}.png"
+    placeholder_image = images_folder / "placeholder.png"
     player_stats = load_player_stats(player_id, "2025-26")
 
     st.button("← Back", on_click=go_back_to_stats_list)
 
     col1, col2, col3, col4, col5, col6 = st.columns([1.5, 2, 1, 1, 1, 1])
     with col1:
-        st.image(image_path, width='content') 
+        if player_image.exists():
+            st.image(player_image, width='content')
+        else:
+            st.image(placeholder_image, width='content')
+            # st.info("No stats available for this player yet.")
 
     with col2:
         st.header(player["full_name"], anchor="player-overview")

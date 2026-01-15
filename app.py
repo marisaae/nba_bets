@@ -173,22 +173,3 @@ with t4:
             st.session_state.selected_prop_market,
             st.session_state.props_event_id
         )
-
-# with t5:
-#     load_dotenv()
-#     dsn = os.getenv("SQLALCHEMY_URL")
-#     engine = create_engine(dsn)
-
-#     query = """
-#     SELECT *
-#     FROM player_prediction_log
-#     WHERE game_date >= CURRENT_DATE
-#     ORDER BY game_date, player_name
-#     """
-
-#     predictions = pd.read_sql(query, engine)
-#     predictions_format = format_predictions(predictions)
-
-#     game_date = predictions_format["game_date"].iloc[0]
-#     st.subheader(f"Stat predictions for next game on {game_date}")
-#     st.dataframe(predictions_format, hide_index=True)
