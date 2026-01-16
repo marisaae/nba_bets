@@ -22,7 +22,7 @@ def render_prop_chart(player_id, prop_line, market, prediction):
 
     diff = abs(prediction - prop_line)
     offset = 6
-    if diff < .5:
+    if diff < 1:
         if prop_line > prediction:
             prop_yshift = offset
             pred_yshift = -offset
