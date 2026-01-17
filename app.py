@@ -61,7 +61,7 @@ all_teams = fetch_all_teams()
 
 lal_team_abbrev = "LAL"
 lal_team_id = all_teams.loc[all_teams['abbreviation'] == lal_team_abbrev, 'id'].iloc[0]
-st.set_page_config(page_title="NBA Player Props", layout="wide")
+st.set_page_config(page_title="NBA Data", layout="wide")
 
 team_df = load_team_info(lal_team_id)
 
